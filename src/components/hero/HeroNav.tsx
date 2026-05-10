@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
 const NAV_LINKS = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Live Demo", href: "#demo" },
-  { label: "AI Magic", href: "#ai" },
-  { label: "Templates", href: "#templates" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Templates",   href: "#templates"   },
+  { label: "AI Effects",  href: "#ai"          },
+  { label: "Studio",     href: "/studio"       },
+  { label: "Showcase",   href: "#showcase"    },
+  { label: "Event Mode", href: "#event-mode"  },
+  { label: "Pricing",    href: "#pricing"     },
 ] as const;
 
 export function HeroNav() {
@@ -35,7 +36,7 @@ export function HeroNav() {
             ))}
           </ul>
 
-          <Button size="sm">Try Booth</Button>
+          <Button size="sm">Open Studio</Button>
         </nav>
       </Container>
     </header>

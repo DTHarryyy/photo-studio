@@ -1,31 +1,40 @@
 import { cn } from "@/lib/utils";
 
-// Anchor tags styled as buttons — no client JS needed for simple href CTAs.
-// The primary action uses a gradient matching the brand; secondary is glass.
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500";
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07001a]";
 
 export function HeroCTA() {
   return (
-    <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+    <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+
+      {/* Primary — gradient with slow glow pulse */}
       <a
-        href="#demo"
+        href="#templates"
         className={cn(
           BASE,
-          "bg-gradient-to-r from-violet-600 to-pink-500 px-7 py-3.5 text-base text-white shadow-lg shadow-violet-500/25 hover:opacity-90"
+          "animate-cta-glow",
+          "bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500",
+          "px-8 py-3.5 text-base text-white",
+          "hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-100"
         )}
       >
-        Try Live Booth <span aria-hidden>→</span>
+        Try Templates <span aria-hidden>→</span>
       </a>
+
+      {/* Secondary — premium glass */}
       <a
-        href="#how-it-works"
+        href="/studio"
         className={cn(
           BASE,
-          "border border-white/20 bg-white/10 px-7 py-3.5 text-base text-white backdrop-blur-sm hover:bg-white/15"
+          "border border-white/15 bg-white/[0.07] px-8 py-3.5 text-base text-white backdrop-blur-md",
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+          "hover:-translate-y-0.5 hover:bg-white/[0.11] hover:border-white/25 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]",
+          "active:translate-y-0"
         )}
       >
-        See how it works
+        Open Studio
       </a>
+
     </div>
   );
 }

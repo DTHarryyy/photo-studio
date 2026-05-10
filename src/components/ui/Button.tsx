@@ -10,9 +10,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-gradient-to-r from-violet-600 to-pink-500 text-white shadow-lg shadow-violet-500/20 hover:opacity-90",
+    "bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 text-white " +
+    "shadow-[0_8px_32px_-4px_rgba(139,92,246,0.45),0_4px_16px_-4px_rgba(236,72,153,0.25)] " +
+    "hover:-translate-y-px hover:brightness-110 hover:shadow-[0_10px_40px_-4px_rgba(139,92,246,0.65)] " +
+    "active:translate-y-0 active:brightness-100",
   secondary:
-    "border border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/15",
+    "border border-white/15 bg-white/[0.07] text-white backdrop-blur-md " +
+    "shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] " +
+    "hover:-translate-y-px hover:bg-white/[0.11] hover:border-white/25 " +
+    "active:translate-y-0",
   ghost: "text-zinc-300 hover:text-white hover:bg-white/8",
   danger: "bg-red-600 text-white hover:bg-red-500",
 };

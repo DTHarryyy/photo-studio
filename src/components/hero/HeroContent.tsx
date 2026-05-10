@@ -4,33 +4,43 @@ import { HeroCTA } from "./HeroCTA";
 export function HeroContent() {
   return (
     <Container>
-      <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 py-24 text-center sm:py-32">
+      {/*
+        Spacing hierarchy (Apple-level discipline):
+          badge → headline : mt-10  (generous breath, badge feels detached/floating)
+          headline → sub   : mt-6   (tight, sub reads as continuation of headline)
+          sub → CTA        : mt-10  (action is visually separated from description)
+      */}
+      <div className="mx-auto flex max-w-4xl flex-col items-center py-28 text-center sm:py-36">
 
-        {/* Beta badge */}
+        {/* ── Badge ── */}
         <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+          <span className="animate-badge-dot h-1.5 w-1.5 rounded-full bg-violet-400" />
           <span className="text-xs font-medium text-zinc-300 tracking-wide">
-            AI Photo Booth · Now in beta
+            AI Photo Studio · New in 2026
           </span>
         </div>
 
-        {/* Headline — the single most important element on the page */}
-        <h1 className="text-5xl font-extrabold leading-[1.07] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
-          Turn events into{" "}
-          <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-rose-300 bg-clip-text text-transparent">
-            unforgettable
+        {/* ── Headline ── */}
+        <h1 className="mt-10 text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+          Create cinematic{" "}
+          <br className="hidden sm:block" />
+          <span className="bg-gradient-to-r from-violet-300 via-fuchsia-300 to-pink-400 bg-clip-text text-transparent">
+            photo moments
           </span>{" "}
-          photo experiences
+          instantly
         </h1>
 
-        {/* Value proposition — scannable in under 3 seconds */}
-        <p className="max-w-xl text-lg leading-relaxed text-zinc-400 sm:text-xl">
-          Capture moments. Create memories. Pitik transforms any event into a
-          cinematic AI-powered photo booth — instantly shareable, infinitely
-          magical.
+        {/* ── Subtitle ── */}
+        <p className="mt-6 max-w-xl text-lg font-light leading-relaxed text-zinc-500 sm:text-xl">
+          Templates, AI filters, and creative effects — all in one studio.{" "}
+          Turn ordinary photos into aesthetic, social-ready creations in seconds.
         </p>
 
-        <HeroCTA />
+        {/* ── CTA ── */}
+        <div className="mt-10">
+          <HeroCTA />
+        </div>
+
       </div>
     </Container>
   );
