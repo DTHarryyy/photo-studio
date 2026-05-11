@@ -84,8 +84,8 @@ function CompositeOutput({
 
   if (templateId === "film") {
     const railW = 22;
-    const holeW = 10;
-    const holeH = 13;
+    const holeW = 11;
+    const holeH = 11;
     const holeCount = rows * 5 + 2;
     const holes = Array.from({ length: holeCount });
 
@@ -120,10 +120,10 @@ function CompositeOutput({
           ))}
         </div>
 
-        {/* Photos + blank footer area */}
-        <div style={{ display: "flex", flexDirection: "column", padding: "14px 10px 0 10px" }}>
+        {/* Photos + blank footer area — uniform padding, footer proportional to preview */}
+        <div style={{ display: "flex", flexDirection: "column", padding: "14px 14px 0 14px" }}>
           {grid}
-          <div style={{ height: 90, background: "#000" }} />
+          <div style={{ height: 72, background: "#000" }} />
         </div>
 
         {/* Right rail */}
@@ -212,10 +212,10 @@ async function downloadComposite(
   const GAP = 4;
 
   const RAIL = isFilm ? 56 : 0;
-  const padX = isPolaroid ? 24 : isFilm ? 16 : 0;
-  const padY = isPolaroid ? 24 : isFilm ? 20 : 0;
-  const bottomPad = isPolaroid ? 100 : isFilm ? 200 : 0;
-  const photoGap = isFilm ? 12 : GAP;
+  const padX = isPolaroid ? 24 : isFilm ? 52 : 0;
+  const padY = isPolaroid ? 24 : isFilm ? 52 : 0;
+  const bottomPad = isPolaroid ? 100 : isFilm ? 240 : 0;
+  const photoGap = isFilm ? 52 : GAP;
 
   const photoW = cols * SLOT_W + (cols - 1) * photoGap;
   const photoH = rows * SLOT_H + (rows - 1) * photoGap;
@@ -233,8 +233,8 @@ async function downloadComposite(
 
   // Film sprocket rails
   if (isFilm) {
-    const HOLE_W = 32;
-    const HOLE_H = 44;
+    const HOLE_W = 36;
+    const HOLE_H = 36;
     const holeCount = rows * 5 + 2;
     const spacing = h / (holeCount + 1);
     const drawRail = (railX: number) => {

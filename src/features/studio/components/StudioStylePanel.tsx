@@ -280,11 +280,11 @@ function TemplateTab({
                         ))}
                       </div>
                       {/* Photos + footer */}
-                      <div className="flex flex-1 flex-col" style={{ padding: "4px 3px 0 3px" }}>
+                      <div className="flex flex-1 flex-col" style={{ padding: "3px 3px 0 3px", gap: 3 }}>
                         {Array.from({ length: 3 }).map((_, i) => (
-                          <div key={i} className="flex-1 rounded-[2px] bg-white/15" style={{ marginBottom: 2 }} />
+                          <div key={i} className="flex-1 rounded-[2px] bg-white/15" />
                         ))}
-                        <div style={{ height: 10 }} />
+                        <div style={{ height: 8 }} />
                       </div>
                       {/* Right rail */}
                       <div className="flex w-2.5 flex-col items-center justify-around py-1">

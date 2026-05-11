@@ -35,7 +35,7 @@ export function StudioPreviewCard({
   const isFilm = templateId === "film";
   const SLOT_W = isFilm ? 46 : 52;
   const SLOT_H = isFilm ? 46 : 52;
-  const GAP = isFilm ? 5 : 2;
+  const GAP = isFilm ? 6 : 2;
   const previewW = cols * SLOT_W + (cols - 1) * GAP;
   const previewH = rows * SLOT_H + (rows - 1) * GAP;
 
@@ -122,11 +122,10 @@ function TemplateFrame({
       <div className="mx-1 mb-1 overflow-hidden rounded-md" style={{ background: "#000" }}>
         <div className="flex items-stretch">
           <FilmSprocketRail />
-          {/* Centre column: spaced photos + blank footer strip */}
-          <div className="flex flex-col" style={{ padding: "10px 6px 0 6px" }}>
+          {/* Centre column — uniform 6px gap on all sides, 28px footer */}
+          <div className="flex flex-col" style={{ padding: "6px 6px 0 6px" }}>
             {children}
-            {/* Blank footer area */}
-            <div style={{ height: 36, background: "#000" }} />
+            <div style={{ height: 28, background: "#000" }} />
           </div>
           <FilmSprocketRail />
         </div>
@@ -150,7 +149,7 @@ function FilmSprocketRail() {
         <div
           key={i}
           className="flex-shrink-0 rounded-[1px]"
-          style={{ width: 4, height: 5, background: "rgba(255,255,255,0.85)" }}
+          style={{ width: 4, height: 4, background: "rgba(255,255,255,0.85)" }}
         />
       ))}
     </div>
