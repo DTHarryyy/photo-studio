@@ -31,11 +31,13 @@ export function StudioPreviewCard({
   stylePack,
   templateId,
 }: Props) {
-  // Compute preview dimensions based on layout
-  const BASE = 52; // px per slot unit
-  const GAP = 2;
-  const previewW = cols * BASE + (cols - 1) * GAP;
-  const previewH = rows * BASE + (rows - 1) * GAP;
+  // Film uses portrait slots to match the strip reference; others use square
+  const isFilm = templateId === "film";
+  const SLOT_W = isFilm ? 46 : 52;
+  const SLOT_H = isFilm ? 64 : 52;
+  const GAP = isFilm ? 3 : 2;
+  const previewW = cols * SLOT_W + (cols - 1) * GAP;
+  const previewH = rows * SLOT_H + (rows - 1) * GAP;
 
   return (
     <motion.div
@@ -70,8 +72,8 @@ export function StudioPreviewCard({
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: `repeat(${cols}, ${BASE}px)`,
-                gridTemplateRows: `repeat(${rows}, ${BASE}px)`,
+                gridTemplateColumns: `repeat(${cols}, ${SLOT_W}px)`,
+                gridTemplateRows: `repeat(${rows}, ${SLOT_H}px)`,
                 gap: `${GAP}px`,
                 width: previewW,
                 height: previewH,
@@ -83,6 +85,7 @@ export function StudioPreviewCard({
                   stream={stream}
                   frame={capturedFrames[i]}
                   stylePack={stylePack}
+                  templateId={templateId}
                 />
               ))}
             </div>
@@ -126,7 +129,12 @@ function TemplateFrame({
       <div className="mx-1 mb-1 overflow-hidden rounded-md" style={{ background: "#000" }}>
         <div className="flex items-stretch">
           <FilmSprocketRail />
-          <div className="flex-1 py-2 px-0.5">{children}</div>
+          {/* Centre column: spaced photos + blank footer strip */}
+          <div className="flex flex-col" style={{ padding: "6px 4px 0 4px" }}>
+            {children}
+            {/* Blank footer area — no text, just dark space like reference */}
+            <div style={{ height: 22, background: "#000" }} />
+          </div>
           <FilmSprocketRail />
         </div>
       </div>
@@ -142,14 +150,14 @@ function TemplateFrame({
 function FilmSprocketRail() {
   return (
     <div
-      className="flex w-3 flex-col items-center justify-around py-2"
+      className="flex w-2 flex-col items-center justify-around py-1.5"
       style={{ background: "#000" }}
     >
-      {Array.from({ length: 10 }).map((_, i) => (
+      {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={i}
-          className="w-2 flex-shrink-0 rounded-[1px]"
-          style={{ height: 5, background: "rgba(255,255,255,0.75)" }}
+          className="flex-shrink-0 rounded-[1px]"
+          style={{ width: 4, height: 5, background: "rgba(255,255,255,0.85)" }}
         />
       ))}
     </div>
@@ -162,14 +170,17 @@ function LiveSlot({
   stream,
   frame,
   stylePack,
+  templateId,
 }: {
   stream: MediaStream | null;
   frame?: CapturedFrame;
   stylePack: StylePack;
+  templateId: TemplateId;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { facingMode } = useCameraStore();
   const mirror = facingMode === "user";
+  const grayscale = templateId === "film" ? "grayscale(1)" : undefined;
 
   useEffect(() => {
     const el = videoRef.current;
@@ -180,33 +191,34 @@ function LiveSlot({
     }
   }, [stream, frame]);
 
-  if (frame) {
-    return (
-      <img
-        src={frame.dataUrl}
-        className="h-full w-full object-cover"
-        alt=""
-      />
-    );
-  }
+  const radius = templateId === "film" ? 4 : 0;
 
-  if (stream) {
-    return (
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        className="h-full w-full object-cover"
-        style={{ transform: mirror ? "scaleX(-1)" : "none" }}
-      />
-    );
-  }
+  const inner = frame ? (
+    <img
+      src={frame.dataUrl}
+      className="h-full w-full object-cover"
+      style={{ filter: grayscale }}
+      alt=""
+    />
+  ) : stream ? (
+    <video
+      ref={videoRef}
+      autoPlay
+      muted
+      playsInline
+      className="h-full w-full object-cover"
+      style={{ transform: mirror ? "scaleX(-1)" : "none", filter: grayscale }}
+    />
+  ) : (
+    <div className="h-full w-full" style={{ backgroundColor: `${stylePack.color}18` }} />
+  );
 
   return (
     <div
-      className="h-full w-full"
-      style={{ backgroundColor: `${stylePack.color}18` }}
-    />
+      className="h-full w-full overflow-hidden"
+      style={{ borderRadius: radius }}
+    >
+      {inner}
+    </div>
   );
 }

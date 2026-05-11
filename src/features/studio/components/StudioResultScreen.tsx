@@ -20,7 +20,7 @@ interface Props {
 
 // ─── Composite output rendered at display size ────────────────────────────────
 
-const SLOT = 130;
+const SLOT = 120;
 const GAP = 3;
 
 function CompositeOutput({
@@ -31,31 +31,44 @@ function CompositeOutput({
   templateId,
   stylePack,
 }: Omit<Props, "onRetake" | "onBack">) {
+  const isFilm = templateId === "film";
+  const slotW = isFilm ? SLOT : SLOT;
+  const slotH = isFilm ? Math.round(SLOT * 1.4) : SLOT;
+  const grayscale = isFilm ? "grayscale(1)" : undefined;
+
   const grid = (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${cols}, ${SLOT}px)`,
-        gridTemplateRows: `repeat(${rows}, ${SLOT}px)`,
+        gridTemplateColumns: `repeat(${cols}, ${slotW}px)`,
+        gridTemplateRows: `repeat(${rows}, ${slotH}px)`,
         gap: GAP,
       }}
     >
       {Array.from({ length: count }).map((_, i) => {
         const frame = capturedFrames[i];
-        return frame ? (
-          <img
-            key={i}
-            src={frame.dataUrl}
-            className="h-full w-full object-cover"
-            style={{ width: SLOT, height: SLOT }}
-            alt=""
-          />
-        ) : (
+        return (
           <div
             key={i}
-            className="bg-white/5"
-            style={{ width: SLOT, height: SLOT }}
-          />
+            style={{
+              width: slotW,
+              height: slotH,
+              borderRadius: isFilm ? 8 : 0,
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            {frame ? (
+              <img
+                src={frame.dataUrl}
+                className="h-full w-full object-cover"
+                style={{ filter: grayscale }}
+                alt=""
+              />
+            ) : (
+              <div className="h-full w-full bg-white/5" />
+            )}
+          </div>
         );
       })}
     </div>
@@ -70,9 +83,9 @@ function CompositeOutput({
   }
 
   if (templateId === "film") {
-    const railW = 28;
-    const holeW = 16;
-    const holeH = 20;
+    const railW = 22;
+    const holeW = 10;
+    const holeH = 13;
     const holeCount = rows * 5 + 2;
     const holes = Array.from({ length: holeCount });
 
@@ -107,8 +120,11 @@ function CompositeOutput({
           ))}
         </div>
 
-        {/* Photos */}
-        <div style={{ padding: "10px 4px" }}>{grid}</div>
+        {/* Photos + blank footer area */}
+        <div style={{ display: "flex", flexDirection: "column", padding: "10px 6px 0 6px" }}>
+          {grid}
+          <div style={{ height: 56, background: "#000" }} />
+        </div>
 
         {/* Right rail */}
         <div
@@ -146,6 +162,40 @@ function CompositeOutput({
   );
 }
 
+// ─── Canvas object-cover helper ──────────────────────────────────────────────
+// Mirrors CSS object-fit:cover — crops from center to fill the target rect
+// without any stretching.
+
+function drawImageCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  dx: number,
+  dy: number,
+  dw: number,
+  dh: number
+) {
+  const srcAR = img.naturalWidth / img.naturalHeight;
+  const dstAR = dw / dh;
+
+  let sx: number, sy: number, sw: number, sh: number;
+
+  if (srcAR > dstAR) {
+    // Source wider than dest — crop left/right
+    sh = img.naturalHeight;
+    sw = sh * dstAR;
+    sx = (img.naturalWidth - sw) / 2;
+    sy = 0;
+  } else {
+    // Source taller than dest — crop top/bottom
+    sw = img.naturalWidth;
+    sh = sw / dstAR;
+    sx = 0;
+    sy = (img.naturalHeight - sh) / 2;
+  }
+
+  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+}
+
 // ─── Download helper ──────────────────────────────────────────────────────────
 
 async function downloadComposite(
@@ -154,19 +204,21 @@ async function downloadComposite(
   rows: number,
   templateId: TemplateId
 ) {
-  const SLOT = 400;
-  const GAP = 4;
-
   const isFilm = templateId === "film";
   const isPolaroid = templateId === "polaroid";
 
-  const RAIL = isFilm ? 60 : 0;
-  const padX = isPolaroid ? 24 : 0;
-  const padY = isPolaroid ? 24 : isFilm ? 16 : 0;
-  const bottomPad = isPolaroid ? 100 : isFilm ? 16 : 0;
+  const SLOT_W = 400;
+  const SLOT_H = isFilm ? 560 : 400;
+  const GAP = 4;
 
-  const photoW = cols * SLOT + (cols - 1) * GAP;
-  const photoH = rows * SLOT + (rows - 1) * GAP;
+  const RAIL = isFilm ? 56 : 0;
+  const padX = isPolaroid ? 24 : isFilm ? 8 : 0;
+  const padY = isPolaroid ? 24 : isFilm ? 12 : 0;
+  const bottomPad = isPolaroid ? 100 : isFilm ? 120 : 0;
+  const photoGap = isFilm ? 6 : GAP;
+
+  const photoW = cols * SLOT_W + (cols - 1) * photoGap;
+  const photoH = rows * SLOT_H + (rows - 1) * photoGap;
   const w = photoW + padX * 2 + RAIL * 2;
   const h = photoH + padY + bottomPad;
 
@@ -207,9 +259,17 @@ async function downloadComposite(
         img.onload = () => {
           const col = i % cols;
           const row = Math.floor(i / cols);
-          const x = RAIL + padX + col * (SLOT + GAP);
-          const y = padY + row * (SLOT + GAP);
-          ctx.drawImage(img, x, y, SLOT, SLOT);
+          const x = RAIL + padX + col * (SLOT_W + photoGap);
+          const y = padY + row * (SLOT_H + photoGap);
+          if (isFilm) {
+            ctx.filter = "grayscale(1)";
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(x, y, SLOT_W, SLOT_H, 12);
+            ctx.clip();
+          }
+          drawImageCover(ctx, img, x, y, SLOT_W, SLOT_H);
+          if (isFilm) { ctx.restore(); ctx.filter = "none"; }
           resolve();
         };
         img.src = frame.dataUrl;

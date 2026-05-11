@@ -272,20 +272,24 @@ function TemplateTab({
                 <div className="aspect-square w-full overflow-hidden rounded-lg bg-black/40">
                   {tpl.id === "film" ? (
                     /* Film: vertical sprocket rails left + right */
-                    <div className="flex h-full" style={{ background: "#000" }}>
-                      <div className="flex w-3 flex-col items-center justify-around py-1.5">
-                        {Array.from({ length: 7 }).map((_, i) => (
-                          <div key={i} className="h-1.5 w-2 rounded-[1px] bg-white/80" />
+                    <div className="flex h-full items-stretch" style={{ background: "#000" }}>
+                      {/* Left rail */}
+                      <div className="flex w-2.5 flex-col items-center justify-around py-1">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <div key={i} className="rounded-[1px] bg-white/85" style={{ width: 4, height: 4 }} />
                         ))}
                       </div>
-                      <div className="flex flex-1 flex-col gap-0.5 py-1.5 px-0.5">
+                      {/* Photos + footer */}
+                      <div className="flex flex-1 flex-col" style={{ padding: "4px 3px 0 3px" }}>
                         {Array.from({ length: 3 }).map((_, i) => (
-                          <div key={i} className="flex-1 bg-white/10 rounded-[1px]" />
+                          <div key={i} className="flex-1 rounded-[2px] bg-white/15" style={{ marginBottom: 2 }} />
                         ))}
+                        <div style={{ height: 10 }} />
                       </div>
-                      <div className="flex w-3 flex-col items-center justify-around py-1.5">
-                        {Array.from({ length: 7 }).map((_, i) => (
-                          <div key={i} className="h-1.5 w-2 rounded-[1px] bg-white/80" />
+                      {/* Right rail */}
+                      <div className="flex w-2.5 flex-col items-center justify-around py-1">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <div key={i} className="rounded-[1px] bg-white/85" style={{ width: 4, height: 4 }} />
                         ))}
                       </div>
                     </div>
