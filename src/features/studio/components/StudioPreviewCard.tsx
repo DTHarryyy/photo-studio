@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, type ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
 import type { TemplateId } from "./StudioOrchestrator";
 import { useCameraStore } from "@/features/camera/store/camera.store";
@@ -16,10 +16,11 @@ interface Props {
   cols: number;
   rows: number;
   count: number;
-  capturedFrames: CapturedFrame[];
+  capturedFrames: (CapturedFrame | null)[];
   stream: MediaStream | null;
   stylePack: StylePack;
   templateId: TemplateId;
+  onRetakeSlot?: (index: number) => void;
 }
 
 export function StudioPreviewCard({
@@ -30,8 +31,8 @@ export function StudioPreviewCard({
   stream,
   stylePack,
   templateId,
+  onRetakeSlot,
 }: Props) {
-  // Film uses portrait slots to match the strip reference; others use square
   const isFilm = templateId === "film";
   const SLOT_W = isFilm ? 46 : 52;
   const SLOT_H = isFilm ? 46 : 52;
@@ -46,14 +47,12 @@ export function StudioPreviewCard({
       transition={{ type: "spring", delay: 0.4, damping: 22, stiffness: 260 }}
       className="absolute bottom-32 right-4 z-20 sm:bottom-36 sm:right-5"
     >
-      {/* Outer glow ring matching style pack */}
       <div
         className="animate-float-b overflow-hidden rounded-2xl shadow-2xl"
         style={{
           boxShadow: `0 0 0 1px ${stylePack.color}35, 0 0 24px ${stylePack.color}25, 0 16px 48px rgba(0,0,0,0.7)`,
         }}
       >
-        {/* Glass card */}
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl">
 
           {/* Header */}
@@ -82,15 +81,16 @@ export function StudioPreviewCard({
               {Array.from({ length: count }).map((_, i) => (
                 <LiveSlot
                   key={i}
+                  index={i}
                   stream={stream}
-                  frame={capturedFrames[i]}
+                  frame={capturedFrames[i] ?? null}
                   stylePack={stylePack}
                   templateId={templateId}
+                  onRetake={onRetakeSlot ? () => onRetakeSlot(i) : undefined}
                 />
               ))}
             </div>
           </TemplateFrame>
-
 
         </div>
       </div>
@@ -101,9 +101,7 @@ export function StudioPreviewCard({
 // ─── Template frame ───────────────────────────────────────────────────────────
 
 function TemplateFrame({
-  templateId,
-  stylePack,
-  children,
+  templateId, stylePack, children,
 }: {
   templateId: TemplateId;
   stylePack: StylePack;
@@ -122,7 +120,6 @@ function TemplateFrame({
       <div className="mx-1 mb-1 overflow-hidden rounded-md" style={{ background: "#000" }}>
         <div className="flex items-stretch">
           <FilmSprocketRail />
-          {/* Centre column — uniform 6px gap on all sides, 28px footer */}
           <div className="flex flex-col" style={{ padding: "6px 6px 0 6px" }}>
             {children}
             <div style={{ height: 28, background: "#000" }} />
@@ -133,7 +130,6 @@ function TemplateFrame({
     );
   }
 
-  // none — default clean container
   return (
     <div className="mx-2 mb-2 overflow-hidden rounded-xl">{children}</div>
   );
@@ -159,15 +155,19 @@ function FilmSprocketRail() {
 // ─── Live slot ────────────────────────────────────────────────────────────────
 
 function LiveSlot({
+  index,
   stream,
   frame,
   stylePack,
   templateId,
+  onRetake,
 }: {
+  index: number;
   stream: MediaStream | null;
-  frame?: CapturedFrame;
+  frame: CapturedFrame | null;
   stylePack: StylePack;
   templateId: TemplateId;
+  onRetake?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { facingMode } = useCameraStore();
@@ -207,10 +207,29 @@ function LiveSlot({
 
   return (
     <div
-      className="h-full w-full overflow-hidden"
+      className="relative h-full w-full overflow-hidden"
       style={{ borderRadius: radius }}
     >
       {inner}
+
+      {/* Retake button — only on captured slots */}
+      <AnimatePresence>
+        {frame && onRetake && (
+          <motion.button
+            key="retake"
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            onClick={(e) => { e.stopPropagation(); onRetake(); }}
+            aria-label={`Retake photo ${index + 1}`}
+            className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm transition-colors hover:bg-black/90"
+            style={{ fontSize: 10, lineHeight: 1 }}
+          >
+            ↺
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

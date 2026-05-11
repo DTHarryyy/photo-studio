@@ -14,7 +14,7 @@ interface Props {
   cols: number;
   rows: number;
   count: number;
-  capturedFrames: CapturedFrame[];
+  capturedFrames: (CapturedFrame | null)[];
   templateId: TemplateId;
   stylePack: StylePack;
   onRetake: () => void;
@@ -47,7 +47,7 @@ function drawImageCover(
 // ─── Download / export ────────────────────────────────────────────────────────
 
 async function downloadComposite(
-  capturedFrames: CapturedFrame[],
+  capturedFrames: (CapturedFrame | null)[],
   cols: number,
   rows: number,
   templateId: TemplateId,
@@ -100,6 +100,7 @@ async function downloadComposite(
   await Promise.all(
     capturedFrames.slice(0, cols * rows).map((frame, i) =>
       new Promise<void>((resolve) => {
+        if (!frame) { resolve(); return; }
         const img = new window.Image();
         img.onload = () => {
           const col = i % cols;

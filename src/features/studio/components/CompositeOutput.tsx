@@ -7,7 +7,7 @@ interface Props {
   cols: number;
   rows: number;
   count: number;
-  capturedFrames: CapturedFrame[];
+  capturedFrames: (CapturedFrame | null)[];
   templateId: TemplateId;
   /** Base slot size in px — all template chrome scales proportionally. Default 120. */
   slotSize?: number;

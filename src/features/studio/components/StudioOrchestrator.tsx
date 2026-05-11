@@ -78,7 +78,7 @@ export function StudioOrchestrator({ layout }: Props) {
   const [activeTemplate, setActiveTemplate] = useState<TemplateId>("none");
 
   const { videoRef, capture } = useCamera();
-  const { capturedFrames, clearFrames, cameraStatus, stream } = useCameraStore();
+  const { capturedFrames, clearFrames, removeFrame, cameraStatus, stream } = useCameraStore();
   const clearLayers = useLayerStore((s) => s.clearLayers);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export function StudioOrchestrator({ layout }: Props) {
     setPhase("capture");
   }
 
-  const capturedCount = Math.min(capturedFrames.length, count);
+  const capturedCount = capturedFrames.filter(Boolean).length;
   const isDone = capturedCount >= count;
   const stylePack = STYLE_PACKS.find((p) => p.id === activePack) ?? STYLE_PACKS[0];
   const isLive = cameraStatus === "active";
@@ -132,6 +132,7 @@ export function StudioOrchestrator({ layout }: Props) {
             stream={stream}
             stylePack={stylePack}
             templateId={activeTemplate}
+            onRetakeSlot={removeFrame}
           />
         )}
       </AnimatePresence>

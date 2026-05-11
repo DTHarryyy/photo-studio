@@ -10,7 +10,7 @@ interface Props {
   onRetake: () => void;
   onContinue: () => void;
   isDone: boolean;
-  capturedFrames: CapturedFrame[];
+  capturedFrames: (CapturedFrame | null)[];
   count: number;
 }
 
@@ -27,28 +27,30 @@ export function StudioCaptureBar({
   return (
     <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-3 pb-safe-bottom pb-8 sm:pb-10">
 
-      {/* Captured thumbnails strip */}
-      {capturedFrames.length > 0 && (
+      {/* Captured thumbnails strip — only non-null frames */}
+      {capturedFrames.some(Boolean) && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex gap-2"
         >
-          {capturedFrames.slice(0, count).map((frame, i) => (
-            <motion.div
-              key={frame.id}
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", delay: i * 0.05 }}
-              className="relative h-14 w-14 overflow-hidden rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] ring-1 ring-white/20"
-            >
-              <img
-                src={frame.dataUrl}
-                className="h-full w-full object-cover"
-                alt={`Capture ${i + 1}`}
-              />
-            </motion.div>
-          ))}
+          {capturedFrames.slice(0, count).map((frame, i) =>
+            frame ? (
+              <motion.div
+                key={frame.id}
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", delay: i * 0.05 }}
+                className="relative h-14 w-14 overflow-hidden rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.6)] ring-1 ring-white/20"
+              >
+                <img
+                  src={frame.dataUrl}
+                  className="h-full w-full object-cover"
+                  alt={`Capture ${i + 1}`}
+                />
+              </motion.div>
+            ) : null
+          )}
         </motion.div>
       )}
 

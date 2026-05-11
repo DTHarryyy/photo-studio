@@ -14,7 +14,7 @@ interface Props {
   cols: number;
   rows: number;
   count: number;
-  capturedFrames: CapturedFrame[];
+  capturedFrames: (CapturedFrame | null)[];
   templateId: TemplateId;
   stylePack: StylePack;
   onBack: () => void;
