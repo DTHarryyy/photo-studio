@@ -10,6 +10,7 @@ import { StudioPreviewCard } from "./StudioPreviewCard";
 import { StudioCaptureBar } from "./StudioCaptureBar";
 import { StudioStylePanel } from "./StudioStylePanel";
 import { StudioResultScreen } from "./StudioResultScreen";
+import { useLayerStore } from "@/features/photobooth/store/useLayerStore";
 
 // ─── Layout config ────────────────────────────────────────────────────────────
 
@@ -77,6 +78,7 @@ export function StudioOrchestrator({ layout }: Props) {
 
   const { videoRef, capture } = useCamera();
   const { capturedFrames, clearFrames, cameraStatus, stream } = useCameraStore();
+  const clearLayers = useLayerStore((s) => s.clearLayers);
 
   // Clear stale frames from any previous session
   useEffect(() => {
@@ -152,7 +154,8 @@ export function StudioOrchestrator({ layout }: Props) {
             templateId={activeTemplate}
             stylePack={stylePack}
             onBack={() => setShowResult(false)}
-            onRetake={() => { setShowResult(false); clearFrames(); }}
+            onRetake={() => { setShowResult(false); clearFrames(); clearLayers(); }}
+            onOpenPanel={() => setStyleOpen(true)}
           />
         )}
       </AnimatePresence>

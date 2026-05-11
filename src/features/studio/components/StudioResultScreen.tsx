@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
 import type { TemplateId } from "./StudioOrchestrator";
 import type { StylePack } from "./StudioPreviewCard";
+import { LayerRenderer } from "@/features/photobooth/layers/LayerRenderer";
+import { useLayerStore } from "@/features/photobooth/store/useLayerStore";
+import type { UserLayer } from "@/features/photobooth/types/layer";
 
 interface Props {
   cols: number;
@@ -16,6 +19,7 @@ interface Props {
   stylePack: StylePack;
   onRetake: () => void;
   onBack: () => void;
+  onOpenPanel?: () => void;
 }
 
 // ─── Composite output rendered at display size ────────────────────────────────
@@ -202,7 +206,8 @@ async function downloadComposite(
   capturedFrames: CapturedFrame[],
   cols: number,
   rows: number,
-  templateId: TemplateId
+  templateId: TemplateId,
+  layers: UserLayer[] = []
 ) {
   const isFilm = templateId === "film";
   const isPolaroid = templateId === "polaroid";
@@ -277,6 +282,46 @@ async function downloadComposite(
     )
   );
 
+  // Draw user layers (stickers + text) on top
+  const sorted = [...layers].sort((a, b) => a.zIndex - b.zIndex);
+  await Promise.all(
+    sorted.map((layer) =>
+      new Promise<void>((resolve) => {
+        if (layer.type === "sticker") {
+          const exportSize = (layer.size / 100) * w;
+          const cx = (layer.x / 100) * w;
+          const cy = (layer.y / 100) * h;
+          const img = new window.Image();
+          img.onload = () => {
+            ctx.save();
+            ctx.translate(cx, cy);
+            if (layer.rotation !== 0) ctx.rotate((layer.rotation * Math.PI) / 180);
+            ctx.drawImage(img, -exportSize / 2, -exportSize / 2, exportSize, exportSize);
+            ctx.restore();
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = layer.src;
+        } else if (layer.type === "text") {
+          const exportFontSize = (layer.fontSize / 100) * w;
+          ctx.save();
+          ctx.font = `bold ${exportFontSize}px ${layer.fontFamily}`;
+          ctx.fillStyle = layer.color;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.shadowColor = "rgba(0,0,0,0.5)";
+          ctx.shadowBlur = exportFontSize * 0.15;
+          ctx.shadowOffsetY = exportFontSize * 0.05;
+          ctx.fillText(layer.text, (layer.x / 100) * w, (layer.y / 100) * h);
+          ctx.restore();
+          resolve();
+        } else {
+          resolve();
+        }
+      })
+    )
+  );
+
   const link = document.createElement("a");
   link.download = "pitik-booth.png";
   link.href = canvas.toDataURL("image/png");
@@ -294,13 +339,16 @@ export function StudioResultScreen({
   stylePack,
   onRetake,
   onBack,
+  onOpenPanel,
 }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const compositeRef = useRef<HTMLDivElement>(null);
+  const layers = useLayerStore((s) => s.layers);
 
   async function handleDownload() {
     setDownloading(true);
-    await downloadComposite(capturedFrames, cols, rows, templateId);
+    await downloadComposite(capturedFrames, cols, rows, templateId, layers);
     setDownloading(false);
   }
 
@@ -369,14 +417,17 @@ export function StudioResultScreen({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15, type: "spring", damping: 22 }}
         >
-          <CompositeOutput
-            cols={cols}
-            rows={rows}
-            count={count}
-            capturedFrames={capturedFrames}
-            templateId={templateId}
-            stylePack={stylePack}
-          />
+          <div ref={compositeRef} style={{ position: "relative" }}>
+            <CompositeOutput
+              cols={cols}
+              rows={rows}
+              count={count}
+              capturedFrames={capturedFrames}
+              templateId={templateId}
+              stylePack={stylePack}
+            />
+            <LayerRenderer compositeRef={compositeRef} />
+          </div>
         </motion.div>
       </div>
 
@@ -415,11 +466,19 @@ export function StudioResultScreen({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.32 }}
-          className="grid grid-cols-2 gap-2.5"
+          className="grid grid-cols-3 gap-2"
         >
           <button
+            onClick={onOpenPanel}
+            className="flex items-center justify-center gap-1.5 rounded-2xl border border-violet-500/30 bg-violet-600/10 py-3 text-sm font-medium text-violet-300 transition-all hover:bg-violet-600/20 hover:text-violet-200 active:scale-95"
+          >
+            <span className="text-base leading-none">✨</span>
+            Decorate
+          </button>
+
+          <button
             onClick={handleShare}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-zinc-300 transition-all hover:bg-white/10 hover:text-white active:scale-95"
+            className="flex items-center justify-center gap-1.5 rounded-2xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-zinc-300 transition-all hover:bg-white/10 hover:text-white active:scale-95"
           >
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
               <path d="M5.44 10.22 10.56 12.78M10.56 3.22 5.44 5.78M13.5 2.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM6.5 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM13.5 13.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
@@ -429,7 +488,7 @@ export function StudioResultScreen({
 
           <button
             onClick={onRetake}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] py-3 text-sm font-medium text-zinc-500 transition-all hover:border-white/20 hover:text-zinc-300 active:scale-95"
+            className="flex items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] py-3 text-sm font-medium text-zinc-500 transition-all hover:border-white/20 hover:text-zinc-300 active:scale-95"
           >
             <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
               <path fillRule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clipRule="evenodd" />
