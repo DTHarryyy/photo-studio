@@ -4,24 +4,44 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { StylePack } from "./StudioPreviewCard";
+import type { LayoutId } from "./StudioOrchestrator";
 
 type Tab = "style" | "filter" | "layout";
 const TABS: { id: Tab; label: string }[] = [
   { id: "style",  label: "Style"  },
-  { id: "filter", label: "Filter" },
   { id: "layout", label: "Layout" },
+  { id: "filter", label: "Filter" },
 ];
 
 const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
+
+interface LayoutOption {
+  id: LayoutId;
+  name: string;
+  cols: number;
+  rows: number;
+  count: number;
+}
 
 interface Props {
   packs: StylePack[];
   activePack: string;
   onSelect: (id: string) => void;
+  layouts: LayoutOption[];
+  activeLayout: LayoutId;
+  onLayoutChange: (id: LayoutId) => void;
   onClose: () => void;
 }
 
-export function StudioStylePanel({ packs, activePack, onSelect, onClose }: Props) {
+export function StudioStylePanel({
+  packs,
+  activePack,
+  onSelect,
+  layouts,
+  activeLayout,
+  onLayoutChange,
+  onClose,
+}: Props) {
   const [tab, setTab] = useState<Tab>("style");
 
   return (
@@ -46,11 +66,9 @@ export function StudioStylePanel({ packs, activePack, onSelect, onClose }: Props
         className="fixed right-0 top-0 z-40 hidden h-full w-72 flex-col border-l border-white/8 bg-black/70 backdrop-blur-2xl md:flex"
       >
         <PanelContent
-          tab={tab}
-          setTab={setTab}
-          packs={packs}
-          activePack={activePack}
-          onSelect={onSelect}
+          tab={tab} setTab={setTab}
+          packs={packs} activePack={activePack} onSelect={onSelect}
+          layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
           onClose={onClose}
         />
       </motion.div>
@@ -68,11 +86,9 @@ export function StudioStylePanel({ packs, activePack, onSelect, onClose }: Props
           <div className="h-1 w-10 rounded-full bg-white/20" />
         </div>
         <PanelContent
-          tab={tab}
-          setTab={setTab}
-          packs={packs}
-          activePack={activePack}
-          onSelect={onSelect}
+          tab={tab} setTab={setTab}
+          packs={packs} activePack={activePack} onSelect={onSelect}
+          layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
           onClose={onClose}
         />
       </motion.div>
@@ -83,11 +99,9 @@ export function StudioStylePanel({ packs, activePack, onSelect, onClose }: Props
 // ─── Shared panel content ─────────────────────────────────────────────────────
 
 function PanelContent({
-  tab,
-  setTab,
-  packs,
-  activePack,
-  onSelect,
+  tab, setTab,
+  packs, activePack, onSelect,
+  layouts, activeLayout, onLayoutChange,
   onClose,
 }: {
   tab: Tab;
@@ -95,6 +109,9 @@ function PanelContent({
   packs: StylePack[];
   activePack: string;
   onSelect: (id: string) => void;
+  layouts: LayoutOption[];
+  activeLayout: LayoutId;
+  onLayoutChange: (id: LayoutId) => void;
   onClose: () => void;
 }) {
   return (
@@ -136,8 +153,10 @@ function PanelContent({
         {tab === "style" && (
           <StyleTab packs={packs} activePack={activePack} onSelect={onSelect} />
         )}
+        {tab === "layout" && (
+          <LayoutTab layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange} />
+        )}
         {tab === "filter" && <PlaceholderTab label="Photo filters coming soon" />}
-        {tab === "layout"  && <PlaceholderTab label="Layout options coming soon" />}
       </div>
     </div>
   );
@@ -187,6 +206,85 @@ function StyleTab({
                   style={{ backgroundColor: pack.color }}
                 />
               )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Layout tab ───────────────────────────────────────────────────────────────
+
+function LayoutTab({
+  layouts,
+  activeLayout,
+  onLayoutChange,
+}: {
+  layouts: LayoutOption[];
+  activeLayout: LayoutId;
+  onLayoutChange: (id: LayoutId) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+        Layouts
+      </p>
+      <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
+        Switching layout resets your current captures.
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {layouts.map((layout) => {
+          const isActive = layout.id === activeLayout;
+          return (
+            <button
+              key={layout.id}
+              onClick={() => onLayoutChange(layout.id)}
+              className={cn(
+                "flex flex-col overflow-hidden rounded-xl border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
+                isActive
+                  ? "border-violet-500/60 bg-violet-600/15 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
+                  : "border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
+              )}
+            >
+              {/* Mini grid preview — fixed square so all cards are the same height */}
+              <div className="p-2.5">
+                <div className="aspect-square w-full overflow-hidden rounded-lg bg-black/40">
+                  <div
+                    className="h-full w-full"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
+                      gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
+                      gap: "3px",
+                      padding: "4px",
+                    }}
+                  >
+                    {Array.from({ length: layout.cols * layout.rows }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "rounded-md transition-colors",
+                          isActive ? "bg-violet-400/50" : "bg-white/20"
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Label */}
+              <div className="px-2 pb-2.5 text-center">
+                <p className={cn(
+                  "text-[11px] font-semibold leading-tight",
+                  isActive ? "text-violet-300" : "text-zinc-400"
+                )}>
+                  {layout.name}
+                </p>
+                <p className="mt-0.5 text-[10px] text-zinc-600">
+                  {layout.count} photo{layout.count !== 1 ? "s" : ""}
+                </p>
+              </div>
             </button>
           );
         })}

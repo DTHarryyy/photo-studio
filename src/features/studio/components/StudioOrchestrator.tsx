@@ -21,6 +21,17 @@ const LAYOUT_MAP = {
   "3strip":   { cols: 3, rows: 1, count: 3 },
 } as const;
 
+export type LayoutId = keyof typeof LAYOUT_MAP;
+
+export const LAYOUT_LIST: { id: LayoutId; name: string; cols: number; rows: number; count: number }[] = [
+  { id: "1photo",   name: "1 Photo",        cols: 1, rows: 1, count: 1 },
+  { id: "2side",    name: "2 Side by Side",  cols: 2, rows: 1, count: 2 },
+  { id: "2stacked", name: "2 Stacked",       cols: 1, rows: 2, count: 2 },
+  { id: "3stacked", name: "3 Stacked",       cols: 1, rows: 3, count: 3 },
+  { id: "4grid",    name: "4 Grid",          cols: 2, rows: 2, count: 4 },
+  { id: "3strip",   name: "3 Strip",         cols: 3, rows: 1, count: 3 },
+];
+
 // ─── Style packs ──────────────────────────────────────────────────────────────
 
 const STYLE_PACKS = [
@@ -39,9 +50,10 @@ interface Props {
 }
 
 export function StudioOrchestrator({ layout }: Props) {
-  const layoutConfig =
-    LAYOUT_MAP[layout as keyof typeof LAYOUT_MAP] ?? LAYOUT_MAP["2side"];
-  const { cols, rows, count } = layoutConfig;
+  const [activeLayout, setActiveLayout] = useState<LayoutId>(
+    (layout as LayoutId) in LAYOUT_MAP ? (layout as LayoutId) : "2side"
+  );
+  const { cols, rows, count } = LAYOUT_MAP[activeLayout];
 
   const [styleOpen, setStyleOpen] = useState(false);
   const [activePack, setActivePack] = useState("minimal");
@@ -53,6 +65,11 @@ export function StudioOrchestrator({ layout }: Props) {
   useEffect(() => {
     clearFrames();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleLayoutChange(id: LayoutId) {
+    setActiveLayout(id);
+    clearFrames();
+  }
 
   const capturedCount = Math.min(capturedFrames.length, count);
   const isDone = capturedCount >= count;
@@ -112,6 +129,9 @@ export function StudioOrchestrator({ layout }: Props) {
             packs={STYLE_PACKS}
             activePack={activePack}
             onSelect={setActivePack}
+            layouts={LAYOUT_LIST}
+            activeLayout={activeLayout}
+            onLayoutChange={handleLayoutChange}
             onClose={() => setStyleOpen(false)}
           />
         )}
