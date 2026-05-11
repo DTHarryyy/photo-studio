@@ -53,7 +53,7 @@ export function useCamera() {
     const video = videoRef.current;
     const canvas = scratchCanvasRef.current;
     if (!video || !canvas) return;
-    const dataUrl = frameToDataUrl(video, canvas);
+    const dataUrl = frameToDataUrl(video, canvas, facingMode === "user");
     addFrame(buildCapturedFrame(dataUrl, video.videoWidth, video.videoHeight));
   }
 

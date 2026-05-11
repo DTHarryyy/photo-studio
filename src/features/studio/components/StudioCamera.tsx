@@ -2,6 +2,7 @@
 
 import type { RefObject } from "react";
 import type { CameraStatus } from "@/features/camera/store/camera.store";
+import { useCameraStore } from "@/features/camera/store/camera.store";
 
 interface Props {
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -11,6 +12,8 @@ interface Props {
 
 export function StudioCamera({ videoRef, cameraStatus, onReload }: Props) {
   const isActive = cameraStatus === "active";
+  const { facingMode } = useCameraStore();
+  const mirror = facingMode === "user";
 
   return (
     <>
@@ -20,7 +23,8 @@ export function StudioCamera({ videoRef, cameraStatus, onReload }: Props) {
         autoPlay
         muted
         playsInline
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300"
+        style={{ transform: mirror ? "scaleX(-1)" : "none" }}
       />
 
       {/* Cinematic vignette overlays — only when live */}

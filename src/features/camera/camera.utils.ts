@@ -2,11 +2,21 @@ import type { CapturedFrame } from "./types/camera.types";
 
 export function frameToDataUrl(
   video: HTMLVideoElement,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
+  mirror = false
 ): string {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext("2d")?.drawImage(video, 0, 0);
+  const w = video.videoWidth;
+  const h = video.videoHeight;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+  if (mirror) {
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(video, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   return canvas.toDataURL("image/png");
 }
 

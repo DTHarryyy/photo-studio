@@ -4,6 +4,7 @@ import { useRef, useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
 import type { TemplateId } from "./StudioOrchestrator";
+import { useCameraStore } from "@/features/camera/store/camera.store";
 
 export interface StylePack {
   id: string;
@@ -171,6 +172,8 @@ function LiveSlot({
   stylePack: StylePack;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const { facingMode } = useCameraStore();
+  const mirror = facingMode === "user";
 
   useEffect(() => {
     const el = videoRef.current;
@@ -199,6 +202,7 @@ function LiveSlot({
         muted
         playsInline
         className="h-full w-full object-cover"
+        style={{ transform: mirror ? "scaleX(-1)" : "none" }}
       />
     );
   }
