@@ -34,8 +34,8 @@ export function StudioPreviewCard({
   // Film uses portrait slots to match the strip reference; others use square
   const isFilm = templateId === "film";
   const SLOT_W = isFilm ? 46 : 52;
-  const SLOT_H = isFilm ? 64 : 52;
-  const GAP = isFilm ? 3 : 2;
+  const SLOT_H = isFilm ? 46 : 52;
+  const GAP = isFilm ? 5 : 2;
   const previewW = cols * SLOT_W + (cols - 1) * GAP;
   const previewH = rows * SLOT_H + (rows - 1) * GAP;
 
@@ -91,13 +91,6 @@ export function StudioPreviewCard({
             </div>
           </TemplateFrame>
 
-          {/* Watermark */}
-          <div
-            className="px-2.5 py-1 text-right text-[8px] font-semibold"
-            style={{ color: `${stylePack.color}80` }}
-          >
-            pitik.io
-          </div>
 
         </div>
       </div>
@@ -130,10 +123,10 @@ function TemplateFrame({
         <div className="flex items-stretch">
           <FilmSprocketRail />
           {/* Centre column: spaced photos + blank footer strip */}
-          <div className="flex flex-col" style={{ padding: "6px 4px 0 4px" }}>
+          <div className="flex flex-col" style={{ padding: "10px 6px 0 6px" }}>
             {children}
-            {/* Blank footer area — no text, just dark space like reference */}
-            <div style={{ height: 22, background: "#000" }} />
+            {/* Blank footer area */}
+            <div style={{ height: 36, background: "#000" }} />
           </div>
           <FilmSprocketRail />
         </div>
@@ -191,7 +184,7 @@ function LiveSlot({
     }
   }, [stream, frame]);
 
-  const radius = templateId === "film" ? 4 : 0;
+  const radius = templateId === "film" ? 7 : 0;
 
   const inner = frame ? (
     <img

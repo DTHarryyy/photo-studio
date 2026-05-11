@@ -32,8 +32,8 @@ function CompositeOutput({
   stylePack,
 }: Omit<Props, "onRetake" | "onBack">) {
   const isFilm = templateId === "film";
-  const slotW = isFilm ? SLOT : SLOT;
-  const slotH = isFilm ? Math.round(SLOT * 1.4) : SLOT;
+  const slotW = SLOT;
+  const slotH = SLOT;
   const grayscale = isFilm ? "grayscale(1)" : undefined;
 
   const grid = (
@@ -53,7 +53,7 @@ function CompositeOutput({
             style={{
               width: slotW,
               height: slotH,
-              borderRadius: isFilm ? 8 : 0,
+              borderRadius: isFilm ? 14 : 0,
               overflow: "hidden",
               flexShrink: 0,
             }}
@@ -121,9 +121,9 @@ function CompositeOutput({
         </div>
 
         {/* Photos + blank footer area */}
-        <div style={{ display: "flex", flexDirection: "column", padding: "10px 6px 0 6px" }}>
+        <div style={{ display: "flex", flexDirection: "column", padding: "14px 10px 0 10px" }}>
           {grid}
-          <div style={{ height: 56, background: "#000" }} />
+          <div style={{ height: 90, background: "#000" }} />
         </div>
 
         {/* Right rail */}
@@ -208,14 +208,14 @@ async function downloadComposite(
   const isPolaroid = templateId === "polaroid";
 
   const SLOT_W = 400;
-  const SLOT_H = isFilm ? 560 : 400;
+  const SLOT_H = 400;
   const GAP = 4;
 
   const RAIL = isFilm ? 56 : 0;
-  const padX = isPolaroid ? 24 : isFilm ? 8 : 0;
-  const padY = isPolaroid ? 24 : isFilm ? 12 : 0;
-  const bottomPad = isPolaroid ? 100 : isFilm ? 120 : 0;
-  const photoGap = isFilm ? 6 : GAP;
+  const padX = isPolaroid ? 24 : isFilm ? 16 : 0;
+  const padY = isPolaroid ? 24 : isFilm ? 20 : 0;
+  const bottomPad = isPolaroid ? 100 : isFilm ? 200 : 0;
+  const photoGap = isFilm ? 12 : GAP;
 
   const photoW = cols * SLOT_W + (cols - 1) * photoGap;
   const photoH = rows * SLOT_H + (rows - 1) * photoGap;
@@ -265,7 +265,7 @@ async function downloadComposite(
             ctx.filter = "grayscale(1)";
             ctx.save();
             ctx.beginPath();
-            ctx.roundRect(x, y, SLOT_W, SLOT_H, 12);
+            ctx.roundRect(x, y, SLOT_W, SLOT_H, 22);
             ctx.clip();
           }
           drawImageCover(ctx, img, x, y, SLOT_W, SLOT_H);
@@ -276,12 +276,6 @@ async function downloadComposite(
       })
     )
   );
-
-  // Watermark
-  ctx.fillStyle = isPolaroid ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)";
-  ctx.font = "bold 18px sans-serif";
-  ctx.textAlign = "right";
-  ctx.fillText("pitik.io", w - RAIL - 8, h - 8);
 
   const link = document.createElement("a");
   link.download = "pitik-booth.png";
