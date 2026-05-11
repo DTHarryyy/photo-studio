@@ -9,6 +9,7 @@ import { StudioTopBar } from "./StudioTopBar";
 import { StudioPreviewCard } from "./StudioPreviewCard";
 import { StudioCaptureBar } from "./StudioCaptureBar";
 import { StudioStylePanel } from "./StudioStylePanel";
+import { StudioResultScreen } from "./StudioResultScreen";
 
 // ─── Layout config ────────────────────────────────────────────────────────────
 
@@ -30,6 +31,21 @@ export const LAYOUT_LIST: { id: LayoutId; name: string; cols: number; rows: numb
   { id: "3stacked", name: "3 Stacked",       cols: 1, rows: 3, count: 3 },
   { id: "4grid",    name: "4 Grid",          cols: 2, rows: 2, count: 4 },
   { id: "3strip",   name: "3 Strip",         cols: 3, rows: 1, count: 3 },
+];
+
+// ─── Studio templates ─────────────────────────────────────────────────────────
+
+export type TemplateId = "none" | "polaroid" | "film" | "vintage";
+
+export const STUDIO_TEMPLATES: {
+  id: TemplateId;
+  name: string;
+  description: string;
+}[] = [
+  { id: "none",     name: "None",     description: "Clean, no frame"       },
+  { id: "polaroid", name: "Polaroid", description: "Classic white border"  },
+  { id: "film",     name: "Film",     description: "Cinematic film strip"  },
+  { id: "vintage",  name: "Vintage",  description: "Warm aged border"      },
 ];
 
 // ─── Style packs ──────────────────────────────────────────────────────────────
@@ -57,6 +73,8 @@ export function StudioOrchestrator({ layout }: Props) {
 
   const [styleOpen, setStyleOpen] = useState(false);
   const [activePack, setActivePack] = useState("minimal");
+  const [activeTemplate, setActiveTemplate] = useState<TemplateId>("none");
+  const [showResult, setShowResult] = useState(false);
 
   const { videoRef, capture } = useCamera();
   const { capturedFrames, clearFrames, cameraStatus, stream } = useCameraStore();
@@ -105,6 +123,7 @@ export function StudioOrchestrator({ layout }: Props) {
             capturedFrames={capturedFrames}
             stream={stream}
             stylePack={stylePack}
+            templateId={activeTemplate}
           />
         )}
       </AnimatePresence>
@@ -118,11 +137,28 @@ export function StudioOrchestrator({ layout }: Props) {
             count={count}
             onCapture={capture}
             onRetake={clearFrames}
+            onContinue={() => setShowResult(true)}
           />
         )}
       </AnimatePresence>
 
-      {/* ── 5. Collapsible style panel (drawer on desktop / sheet on mobile) */}
+      {/* ── 5. Result screen — slides up after all shots taken ────────── */}
+      <AnimatePresence>
+        {showResult && (
+          <StudioResultScreen
+            cols={cols}
+            rows={rows}
+            count={count}
+            capturedFrames={capturedFrames}
+            templateId={activeTemplate}
+            stylePack={stylePack}
+            onBack={() => setShowResult(false)}
+            onRetake={() => { setShowResult(false); clearFrames(); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── 6. Collapsible style panel (drawer on desktop / sheet on mobile) */}
       <AnimatePresence>
         {styleOpen && (
           <StudioStylePanel
@@ -132,6 +168,9 @@ export function StudioOrchestrator({ layout }: Props) {
             layouts={LAYOUT_LIST}
             activeLayout={activeLayout}
             onLayoutChange={handleLayoutChange}
+            templates={STUDIO_TEMPLATES}
+            activeTemplate={activeTemplate}
+            onTemplateChange={setActiveTemplate}
             onClose={() => setStyleOpen(false)}
           />
         )}

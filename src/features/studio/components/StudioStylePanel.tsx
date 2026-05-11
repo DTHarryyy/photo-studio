@@ -4,13 +4,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { StylePack } from "./StudioPreviewCard";
-import type { LayoutId } from "./StudioOrchestrator";
+import type { LayoutId, TemplateId } from "./StudioOrchestrator";
 
-type Tab = "style" | "filter" | "layout";
+type Tab = "style" | "template" | "layout" | "filter";
 const TABS: { id: Tab; label: string }[] = [
-  { id: "style",  label: "Style"  },
-  { id: "layout", label: "Layout" },
-  { id: "filter", label: "Filter" },
+  { id: "style",    label: "Style"    },
+  { id: "template", label: "Template" },
+  { id: "layout",   label: "Layout"   },
+  { id: "filter",   label: "Filter"   },
 ];
 
 const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
@@ -23,6 +24,12 @@ interface LayoutOption {
   count: number;
 }
 
+interface TemplateOption {
+  id: TemplateId;
+  name: string;
+  description: string;
+}
+
 interface Props {
   packs: StylePack[];
   activePack: string;
@@ -30,16 +37,16 @@ interface Props {
   layouts: LayoutOption[];
   activeLayout: LayoutId;
   onLayoutChange: (id: LayoutId) => void;
+  templates: TemplateOption[];
+  activeTemplate: TemplateId;
+  onTemplateChange: (id: TemplateId) => void;
   onClose: () => void;
 }
 
 export function StudioStylePanel({
-  packs,
-  activePack,
-  onSelect,
-  layouts,
-  activeLayout,
-  onLayoutChange,
+  packs, activePack, onSelect,
+  layouts, activeLayout, onLayoutChange,
+  templates, activeTemplate, onTemplateChange,
   onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>("style");
@@ -69,6 +76,7 @@ export function StudioStylePanel({
           tab={tab} setTab={setTab}
           packs={packs} activePack={activePack} onSelect={onSelect}
           layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
+          templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange}
           onClose={onClose}
         />
       </motion.div>
@@ -89,6 +97,7 @@ export function StudioStylePanel({
           tab={tab} setTab={setTab}
           packs={packs} activePack={activePack} onSelect={onSelect}
           layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
+          templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange}
           onClose={onClose}
         />
       </motion.div>
@@ -102,6 +111,7 @@ function PanelContent({
   tab, setTab,
   packs, activePack, onSelect,
   layouts, activeLayout, onLayoutChange,
+  templates, activeTemplate, onTemplateChange,
   onClose,
 }: {
   tab: Tab;
@@ -112,6 +122,9 @@ function PanelContent({
   layouts: LayoutOption[];
   activeLayout: LayoutId;
   onLayoutChange: (id: LayoutId) => void;
+  templates: TemplateOption[];
+  activeTemplate: TemplateId;
+  onTemplateChange: (id: TemplateId) => void;
   onClose: () => void;
 }) {
   return (
@@ -152,6 +165,9 @@ function PanelContent({
       <div className="flex-1 overflow-y-auto p-4">
         {tab === "style" && (
           <StyleTab packs={packs} activePack={activePack} onSelect={onSelect} />
+        )}
+        {tab === "template" && (
+          <TemplateTab templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange} />
         )}
         {tab === "layout" && (
           <LayoutTab layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange} />
@@ -210,6 +226,101 @@ function StyleTab({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ─── Template tab ─────────────────────────────────────────────────────────────
+
+const TEMPLATE_VISUALS: Record<TemplateId, { bg: string; border: string; extra?: string }> = {
+  none:     { bg: "bg-zinc-800",  border: "border-white/10" },
+  polaroid: { bg: "bg-white",     border: "border-white/20", extra: "pb-5" },
+  film:     { bg: "bg-zinc-950",  border: "border-zinc-700" },
+  vintage:  { bg: "bg-[#c9a882]", border: "border-[#a17c5b]" },
+};
+
+function TemplateTab({
+  templates,
+  activeTemplate,
+  onTemplateChange,
+}: {
+  templates: TemplateOption[];
+  activeTemplate: TemplateId;
+  onTemplateChange: (id: TemplateId) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+        Templates
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {templates.map((tpl) => {
+          const isActive = tpl.id === activeTemplate;
+          const vis = TEMPLATE_VISUALS[tpl.id];
+          return (
+            <button
+              key={tpl.id}
+              onClick={() => onTemplateChange(tpl.id)}
+              className={cn(
+                "flex flex-col overflow-hidden rounded-xl border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
+                isActive
+                  ? "border-violet-500/60 bg-violet-600/15 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
+                  : "border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
+              )}
+            >
+              {/* Frame style preview */}
+              <div className="p-2.5">
+                <div className="aspect-square w-full overflow-hidden rounded-lg bg-black/40">
+                  <div className={cn("h-full w-full flex flex-col")}>
+                    {tpl.id === "film" && <FilmStrip />}
+                    <div className={cn(
+                      "flex-1 m-1 rounded-sm overflow-hidden",
+                      vis.bg, vis.border, "border",
+                      vis.extra
+                    )}>
+                      <div className="grid h-full grid-cols-2 grid-rows-2 gap-0.5 p-0.5">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={cn(
+                              "rounded-[1px]",
+                              tpl.id === "polaroid" ? "bg-zinc-200" :
+                              tpl.id === "vintage"  ? "bg-[#a17c5b]/60" :
+                              "bg-white/15"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {tpl.id === "film" && <FilmStrip />}
+                  </div>
+                </div>
+              </div>
+
+              {/* Label */}
+              <div className="px-2 pb-2.5 text-center">
+                <p className={cn(
+                  "text-[11px] font-semibold",
+                  isActive ? "text-violet-300" : "text-zinc-400"
+                )}>
+                  {tpl.name}
+                </p>
+                <p className="mt-0.5 text-[10px] text-zinc-600">{tpl.description}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FilmStrip() {
+  return (
+    <div className="flex h-2.5 items-center justify-around bg-zinc-950 px-1">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="h-1.5 w-0.5 rounded-[1px] bg-zinc-700" />
+      ))}
     </div>
   );
 }

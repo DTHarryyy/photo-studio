@@ -7,6 +7,7 @@ import type { CapturedFrame } from "@/features/camera/types/camera.types";
 interface Props {
   onCapture: () => void;
   onRetake: () => void;
+  onContinue: () => void;
   isDone: boolean;
   capturedFrames: CapturedFrame[];
   count: number;
@@ -15,6 +16,7 @@ interface Props {
 export function StudioCaptureBar({
   onCapture,
   onRetake,
+  onContinue,
   isDone,
   capturedFrames,
   count,
@@ -111,7 +113,8 @@ export function StudioCaptureBar({
             initial={{ opacity: 0, x: 8 }}
             animate={{ opacity: 1, x: 0 }}
             whileTap={{ scale: 0.95 }}
-            className="flex h-12 items-center gap-1.5 rounded-full border border-violet-500/40 bg-violet-600/25 px-5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-violet-600/40 hover:border-violet-500/60"
+            onClick={onContinue}
+          className="flex h-12 items-center gap-1.5 rounded-full border border-violet-500/40 bg-violet-600/25 px-5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-violet-600/40 hover:border-violet-500/60"
           >
             Continue
             <svg className="h-3.5 w-3.5" viewBox="0 0 14 14" fill="currentColor" aria-hidden>

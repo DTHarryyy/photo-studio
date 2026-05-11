@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
+import type { TemplateId } from "./StudioOrchestrator";
 
 export interface StylePack {
   id: string;
@@ -17,6 +18,7 @@ interface Props {
   capturedFrames: CapturedFrame[];
   stream: MediaStream | null;
   stylePack: StylePack;
+  templateId: TemplateId;
 }
 
 export function StudioPreviewCard({
@@ -26,6 +28,7 @@ export function StudioPreviewCard({
   capturedFrames,
   stream,
   stylePack,
+  templateId,
 }: Props) {
   // Compute preview dimensions based on layout
   const BASE = 52; // px per slot unit
@@ -61,27 +64,28 @@ export function StudioPreviewCard({
             />
           </div>
 
-          {/* Slot grid */}
-          <div
-            className="mx-2 mb-2 overflow-hidden rounded-xl"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${cols}, ${BASE}px)`,
-              gridTemplateRows: `repeat(${rows}, ${BASE}px)`,
-              gap: `${GAP}px`,
-              width: previewW,
-              height: previewH,
-            }}
-          >
-            {Array.from({ length: count }).map((_, i) => (
-              <LiveSlot
-                key={i}
-                stream={stream}
-                frame={capturedFrames[i]}
-                stylePack={stylePack}
-              />
-            ))}
-          </div>
+          {/* Slot grid wrapped in template frame */}
+          <TemplateFrame templateId={templateId} stylePack={stylePack}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${cols}, ${BASE}px)`,
+                gridTemplateRows: `repeat(${rows}, ${BASE}px)`,
+                gap: `${GAP}px`,
+                width: previewW,
+                height: previewH,
+              }}
+            >
+              {Array.from({ length: count }).map((_, i) => (
+                <LiveSlot
+                  key={i}
+                  stream={stream}
+                  frame={capturedFrames[i]}
+                  stylePack={stylePack}
+                />
+              ))}
+            </div>
+          </TemplateFrame>
 
           {/* Watermark */}
           <div
@@ -94,6 +98,64 @@ export function StudioPreviewCard({
         </div>
       </div>
     </motion.div>
+  );
+}
+
+// ─── Template frame ───────────────────────────────────────────────────────────
+
+function TemplateFrame({
+  templateId,
+  stylePack,
+  children,
+}: {
+  templateId: TemplateId;
+  stylePack: StylePack;
+  children: ReactNode;
+}) {
+  if (templateId === "polaroid") {
+    return (
+      <div className="mx-1.5 mb-1.5 overflow-hidden rounded-sm bg-white p-1.5 pb-6 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    );
+  }
+
+  if (templateId === "film") {
+    return (
+      <div className="mx-1.5 mb-1.5 overflow-hidden rounded-lg bg-zinc-950">
+        <SprocketRow />
+        <div className="bg-zinc-900">{children}</div>
+        <SprocketRow />
+      </div>
+    );
+  }
+
+  if (templateId === "vintage") {
+    return (
+      <div
+        className="mx-1.5 mb-1.5 overflow-hidden rounded-sm p-1.5"
+        style={{ background: "linear-gradient(145deg,#c9a882,#a17c5b)" }}
+      >
+        <div className="overflow-hidden rounded-[1px] ring-1 ring-black/10">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
+  // none — default clean container
+  return (
+    <div className="mx-2 mb-2 overflow-hidden rounded-xl">{children}</div>
+  );
+}
+
+function SprocketRow() {
+  return (
+    <div className="flex h-3 items-center justify-around bg-zinc-950 px-1">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="h-1.5 w-1 rounded-[1px] bg-zinc-800" />
+      ))}
+    </div>
   );
 }
 
