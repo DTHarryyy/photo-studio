@@ -5,16 +5,12 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { StylePack } from "./StudioPreviewCard";
 import type { LayoutId, TemplateId } from "./StudioOrchestrator";
-import { useLayerStore } from "@/features/photobooth/store/useLayerStore";
-
-type Tab = "style" | "template" | "layout" | "filter" | "stickers" | "text";
+type Tab = "style" | "template" | "layout" | "filter";
 const TABS: { id: Tab; label: string }[] = [
   { id: "style",    label: "Style"    },
   { id: "template", label: "Template" },
   { id: "layout",   label: "Layout"   },
   { id: "filter",   label: "Filter"   },
-  { id: "stickers", label: "Stickers" },
-  { id: "text",     label: "Text"     },
 ];
 
 const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
@@ -146,14 +142,14 @@ function PanelContent({
         </button>
       </div>
 
-      {/* Tabs — scrollable so all 6 fit */}
-      <div className="flex flex-shrink-0 overflow-x-auto border-b border-white/8 scrollbar-none">
+      {/* Tabs */}
+      <div className="flex flex-shrink-0 border-b border-white/8">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={cn(
-              "flex-shrink-0 px-3 py-2.5 text-xs font-semibold transition-colors",
+              "flex-1 py-2.5 text-xs font-semibold transition-colors",
               tab === t.id
                 ? "border-b-2 border-violet-500 text-white"
                 : "text-zinc-500 hover:text-zinc-300"
@@ -176,8 +172,6 @@ function PanelContent({
           <LayoutTab layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange} />
         )}
         {tab === "filter" && <PlaceholderTab label="Photo filters coming soon" />}
-        {tab === "stickers" && <StickersTab />}
-        {tab === "text" && <TextTab />}
       </div>
     </div>
   );
@@ -429,217 +423,3 @@ function PlaceholderTab({ label }: { label: string }) {
   );
 }
 
-// ─── Sticker library (OpenMoji SVGs) ─────────────────────────────────────────
-
-const STICKER_DEFS: { src: string; name: string; category: string }[] = [
-  // Fun
-  { src: "/assets/stickers/sparkles.svg",    name: "Sparkles",    category: "fun"   },
-  { src: "/assets/stickers/fire.svg",        name: "Fire",        category: "fun"   },
-  { src: "/assets/stickers/party-popper.svg",name: "Party",       category: "fun"   },
-  { src: "/assets/stickers/balloon.svg",     name: "Balloon",     category: "fun"   },
-  { src: "/assets/stickers/confetti.svg",    name: "Confetti",    category: "fun"   },
-  { src: "/assets/stickers/dizzy.svg",       name: "Dizzy",       category: "fun"   },
-  { src: "/assets/stickers/rainbow.svg",     name: "Rainbow",     category: "fun"   },
-  { src: "/assets/stickers/star.svg",        name: "Star",        category: "fun"   },
-  { src: "/assets/stickers/star-glow.svg",   name: "Glowing Star",category: "fun"   },
-  // Hearts
-  { src: "/assets/stickers/heart.svg",       name: "Heart",       category: "hearts"},
-  { src: "/assets/stickers/hearts-two.svg",  name: "Two Hearts",  category: "hearts"},
-  { src: "/assets/stickers/heart-spark.svg", name: "Sparkling",   category: "hearts"},
-  { src: "/assets/stickers/hearts-face.svg", name: "Heart Face",  category: "hearts"},
-  { src: "/assets/stickers/hundred.svg",     name: "100",         category: "hearts"},
-  // Faces
-  { src: "/assets/stickers/sunglasses.svg",  name: "Cool",        category: "faces" },
-  { src: "/assets/stickers/party-face.svg",  name: "Party",       category: "faces" },
-  { src: "/assets/stickers/heart-eyes.svg",  name: "Heart Eyes",  category: "faces" },
-  { src: "/assets/stickers/star-struck.svg", name: "Star Struck", category: "faces" },
-  { src: "/assets/stickers/wink.svg",        name: "Wink",        category: "faces" },
-  // Style
-  { src: "/assets/stickers/crown.svg",       name: "Crown",       category: "style" },
-  { src: "/assets/stickers/diamond.svg",     name: "Diamond",     category: "style" },
-  { src: "/assets/stickers/blossom.svg",     name: "Blossom",     category: "style" },
-  { src: "/assets/stickers/butterfly.svg",   name: "Butterfly",   category: "style" },
-  { src: "/assets/stickers/sunflower.svg",   name: "Sunflower",   category: "style" },
-  { src: "/assets/stickers/camera.svg",      name: "Camera",      category: "style" },
-  { src: "/assets/stickers/clover.svg",      name: "Clover",      category: "style" },
-];
-const STICKER_CATEGORIES = [...new Set(STICKER_DEFS.map((s) => s.category))];
-
-// ─── Stickers tab ─────────────────────────────────────────────────────────────
-
-function StickersTab() {
-  const [activeCategory, setActiveCategory] = useState(STICKER_CATEGORIES[0]);
-  const { addSticker, layers, selectedId, updateLayer } = useLayerStore();
-
-  const selectedSticker = layers.find(
-    (l) => l.id === selectedId && l.type === "sticker"
-  ) as Extract<typeof layers[number], { type: "sticker" }> | undefined;
-
-  return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-        Stickers
-      </p>
-
-      {/* Category filter */}
-      <div className="flex gap-1 flex-wrap">
-        {STICKER_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={cn(
-              "rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize transition-colors",
-              cat === activeCategory
-                ? "bg-violet-600 text-white"
-                : "bg-white/8 text-zinc-400 hover:bg-white/12 hover:text-white"
-            )}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Sticker grid */}
-      <div className="grid grid-cols-5 gap-1.5">
-        {STICKER_DEFS.filter((s) => s.category === activeCategory).map((s) => (
-          <button
-            key={s.src}
-            onClick={() => addSticker(s.src, s.name)}
-            title={s.name}
-            className="flex aspect-square items-center justify-center rounded-xl bg-white/5 p-1.5 transition-all hover:bg-white/12 hover:scale-110 active:scale-95"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={s.src} alt={s.name} className="h-full w-full object-contain" draggable={false} />
-          </button>
-        ))}
-      </div>
-
-      {/* Selected sticker size control */}
-      {selectedSticker && (
-        <div className="mt-1 flex flex-col gap-2 rounded-xl border border-white/8 bg-white/[0.03] p-3">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">Size</p>
-            <span className="text-[10px] text-zinc-500">{Math.round(selectedSticker.size)}%</span>
-          </div>
-          <input
-            type="range"
-            min={5}
-            max={60}
-            step={1}
-            value={selectedSticker.size}
-            onChange={(e) => updateLayer(selectedSticker.id, { size: Number(e.target.value) })}
-            className="w-full accent-violet-500"
-          />
-        </div>
-      )}
-
-      <p className="text-[10px] leading-relaxed text-zinc-700">
-        Tap a sticker to add it. Drag to reposition.
-      </p>
-    </div>
-  );
-}
-
-// ─── Text tab ─────────────────────────────────────────────────────────────────
-
-const TEXT_COLORS = [
-  "#ffffff", "#000000", "#f87171", "#fb923c", "#facc15",
-  "#4ade80", "#60a5fa", "#c084fc", "#f472b6",
-];
-
-const FONT_OPTIONS = [
-  { label: "Sans", value: "sans-serif" },
-  { label: "Serif", value: "serif" },
-  { label: "Mono", value: "monospace" },
-];
-
-function TextTab() {
-  const { addText, layers, selectedId, updateLayer } = useLayerStore();
-
-  const selectedText = layers.find(
-    (l) => l.id === selectedId && l.type === "text"
-  ) as Extract<typeof layers[number], { type: "text" }> | undefined;
-
-  return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-        Text
-      </p>
-
-      <button
-        onClick={addText}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] py-3 text-sm font-medium text-zinc-400 transition-all hover:border-violet-500/50 hover:bg-violet-600/10 hover:text-white"
-      >
-        <span className="text-lg leading-none">T</span>
-        Add Text
-      </button>
-
-      {selectedText && (
-        <div className="flex flex-col gap-3 rounded-xl border border-white/8 bg-white/[0.03] p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-            Selected text
-          </p>
-
-          {/* Font size */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] text-zinc-500">Size</p>
-              <span className="text-[10px] text-zinc-500">{Math.round(selectedText.fontSize)}%</span>
-            </div>
-            <input
-              type="range"
-              min={4}
-              max={25}
-              step={0.5}
-              value={selectedText.fontSize}
-              onChange={(e) => updateLayer(selectedText.id, { fontSize: Number(e.target.value) })}
-              className="w-full accent-violet-500"
-            />
-          </div>
-
-          {/* Font family */}
-          <div className="flex gap-1">
-            {FONT_OPTIONS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => updateLayer(selectedText.id, { fontFamily: f.value })}
-                className={cn(
-                  "flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors",
-                  selectedText.fontFamily === f.value
-                    ? "bg-violet-600 text-white"
-                    : "bg-white/8 text-zinc-400 hover:bg-white/12"
-                )}
-                style={{ fontFamily: f.value }}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Color picker */}
-          <div className="flex flex-col gap-1.5">
-            <p className="text-[10px] text-zinc-500">Color</p>
-            <div className="flex flex-wrap gap-1.5">
-              {TEXT_COLORS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => updateLayer(selectedText.id, { color: c })}
-                  className={cn(
-                    "h-6 w-6 rounded-full ring-offset-1 ring-offset-black transition-all",
-                    selectedText.color === c ? "ring-2 ring-violet-400" : "ring-1 ring-white/10"
-                  )}
-                  style={{ background: c }}
-                  aria-label={c}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <p className="text-[10px] leading-relaxed text-zinc-700">
-        Tap "Add Text" to place text. Drag to move. Double-click to edit.
-      </p>
-    </div>
-  );
-}

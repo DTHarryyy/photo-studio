@@ -10,6 +10,7 @@ import { StudioPreviewCard } from "./StudioPreviewCard";
 import { StudioCaptureBar } from "./StudioCaptureBar";
 import { StudioStylePanel } from "./StudioStylePanel";
 import { StudioResultScreen } from "./StudioResultScreen";
+import { StudioEditScreen } from "./StudioEditScreen";
 import { useLayerStore } from "@/features/photobooth/store/useLayerStore";
 
 // ─── Layout config ────────────────────────────────────────────────────────────
@@ -34,15 +35,11 @@ export const LAYOUT_LIST: { id: LayoutId; name: string; cols: number; rows: numb
   { id: "3strip",   name: "3 Strip",         cols: 3, rows: 1, count: 3 },
 ];
 
-// ─── Studio templates ─────────────────────────────────────────────────────────
+// ─── Templates ────────────────────────────────────────────────────────────────
 
 export type TemplateId = "none" | "polaroid" | "film";
 
-export const STUDIO_TEMPLATES: {
-  id: TemplateId;
-  name: string;
-  description: string;
-}[] = [
+export const STUDIO_TEMPLATES: { id: TemplateId; name: string; description: string }[] = [
   { id: "none",     name: "None",     description: "Clean, no frame"      },
   { id: "polaroid", name: "Polaroid", description: "Classic white border" },
   { id: "film",     name: "Film",     description: "35mm film strip"      },
@@ -59,6 +56,10 @@ const STYLE_PACKS = [
   { id: "neon",    name: "Neon",    color: "#a855f7" },
 ];
 
+// ─── Phase type ───────────────────────────────────────────────────────────────
+
+type Phase = "capture" | "edit" | "export";
+
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
 interface Props {
@@ -71,16 +72,15 @@ export function StudioOrchestrator({ layout }: Props) {
   );
   const { cols, rows, count } = LAYOUT_MAP[activeLayout];
 
+  const [phase, setPhase] = useState<Phase>("capture");
   const [styleOpen, setStyleOpen] = useState(false);
   const [activePack, setActivePack] = useState("minimal");
   const [activeTemplate, setActiveTemplate] = useState<TemplateId>("none");
-  const [showResult, setShowResult] = useState(false);
 
   const { videoRef, capture } = useCamera();
   const { capturedFrames, clearFrames, cameraStatus, stream } = useCameraStore();
   const clearLayers = useLayerStore((s) => s.clearLayers);
 
-  // Clear stale frames from any previous session
   useEffect(() => {
     clearFrames();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -88,6 +88,13 @@ export function StudioOrchestrator({ layout }: Props) {
   function handleLayoutChange(id: LayoutId) {
     setActiveLayout(id);
     clearFrames();
+    clearLayers();
+  }
+
+  function handleRetake() {
+    clearFrames();
+    clearLayers();
+    setPhase("capture");
   }
 
   const capturedCount = Math.min(capturedFrames.length, count);
@@ -114,9 +121,9 @@ export function StudioOrchestrator({ layout }: Props) {
         onReset={clearFrames}
       />
 
-      {/* ── 3. Floating preview card (live camera in each slot) ──────── */}
+      {/* ── 3. Floating preview card ─────────────────────────────────── */}
       <AnimatePresence>
-        {isLive && (
+        {isLive && phase === "capture" && (
           <StudioPreviewCard
             cols={cols}
             rows={rows}
@@ -129,23 +136,39 @@ export function StudioOrchestrator({ layout }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ── 4. Floating capture controls ─────────────────────────────── */}
+      {/* ── 4. Capture controls ──────────────────────────────────────── */}
       <AnimatePresence>
-        {isLive && (
+        {isLive && phase === "capture" && (
           <StudioCaptureBar
             isDone={isDone}
             capturedFrames={capturedFrames}
             count={count}
             onCapture={capture}
             onRetake={clearFrames}
-            onContinue={() => setShowResult(true)}
+            onContinue={() => setPhase("edit")}
           />
         )}
       </AnimatePresence>
 
-      {/* ── 5. Result screen — slides up after all shots taken ────────── */}
+      {/* ── 5. Edit screen ───────────────────────────────────────────── */}
       <AnimatePresence>
-        {showResult && (
+        {phase === "edit" && (
+          <StudioEditScreen
+            cols={cols}
+            rows={rows}
+            count={count}
+            capturedFrames={capturedFrames}
+            templateId={activeTemplate}
+            stylePack={stylePack}
+            onBack={() => setPhase("capture")}
+            onDone={() => setPhase("export")}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── 6. Export / result screen ────────────────────────────────── */}
+      <AnimatePresence>
+        {phase === "export" && (
           <StudioResultScreen
             cols={cols}
             rows={rows}
@@ -153,14 +176,13 @@ export function StudioOrchestrator({ layout }: Props) {
             capturedFrames={capturedFrames}
             templateId={activeTemplate}
             stylePack={stylePack}
-            onBack={() => setShowResult(false)}
-            onRetake={() => { setShowResult(false); clearFrames(); clearLayers(); }}
-            onOpenPanel={() => setStyleOpen(true)}
+            onBack={() => setPhase("edit")}
+            onRetake={handleRetake}
           />
         )}
       </AnimatePresence>
 
-      {/* ── 6. Collapsible style panel (drawer on desktop / sheet on mobile) */}
+      {/* ── 7. Style panel (capture phase only) ─────────────────────── */}
       <AnimatePresence>
         {styleOpen && (
           <StudioStylePanel
