@@ -70,22 +70,71 @@ function CompositeOutput({
   }
 
   if (templateId === "film") {
-    return (
-      <div className="overflow-hidden rounded-lg bg-zinc-950 shadow-2xl">
-        <FilmBar cols={cols} />
-        <div className="bg-zinc-900">{grid}</div>
-        <FilmBar cols={cols} />
-      </div>
-    );
-  }
+    const railW = 28;
+    const holeW = 16;
+    const holeH = 20;
+    const holeCount = rows * 5 + 2;
+    const holes = Array.from({ length: holeCount });
 
-  if (templateId === "vintage") {
     return (
       <div
-        className="overflow-hidden rounded-sm p-2.5 shadow-2xl"
-        style={{ background: "linear-gradient(145deg,#c9a882,#a17c5b)" }}
+        className="overflow-hidden rounded-lg shadow-2xl"
+        style={{ background: "#000", display: "flex", alignItems: "stretch" }}
       >
-        <div className="overflow-hidden rounded-[2px]">{grid}</div>
+        {/* Left rail */}
+        <div
+          style={{
+            width: railW,
+            background: "#000",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "space-around",
+            paddingTop: 10,
+            paddingBottom: 10,
+          }}
+        >
+          {holes.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: holeW,
+                height: holeH,
+                borderRadius: 2,
+                background: "rgba(255,255,255,0.85)",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Photos */}
+        <div style={{ padding: "10px 4px" }}>{grid}</div>
+
+        {/* Right rail */}
+        <div
+          style={{
+            width: railW,
+            background: "#000",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "space-around",
+            paddingTop: 10,
+            paddingBottom: 10,
+          }}
+        >
+          {holes.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: holeW,
+                height: holeH,
+                borderRadius: 2,
+                background: "rgba(255,255,255,0.85)",
+              }}
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -93,17 +142,6 @@ function CompositeOutput({
   return (
     <div className="overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
       {grid}
-    </div>
-  );
-}
-
-function FilmBar({ cols }: { cols: number }) {
-  const holes = cols * 3;
-  return (
-    <div className="flex h-5 items-center justify-around bg-zinc-950 px-2">
-      {Array.from({ length: holes }).map((_, i) => (
-        <div key={i} className="h-3 w-1.5 rounded-[2px] bg-zinc-800" />
-      ))}
     </div>
   );
 }
@@ -116,57 +154,74 @@ async function downloadComposite(
   rows: number,
   templateId: TemplateId
 ) {
-  const EXPORT_SLOT = 400;
-  const EXPORT_GAP = 4;
-  const pad = templateId === "polaroid" ? 20 : templateId === "vintage" ? 16 : 0;
-  const bottomPad = templateId === "polaroid" ? 80 : 0;
+  const SLOT = 400;
+  const GAP = 4;
 
-  const w = cols * EXPORT_SLOT + (cols - 1) * EXPORT_GAP + pad * 2;
-  const h = rows * EXPORT_SLOT + (rows - 1) * EXPORT_GAP + pad * 2 + bottomPad;
+  const isFilm = templateId === "film";
+  const isPolaroid = templateId === "polaroid";
+
+  const RAIL = isFilm ? 60 : 0;
+  const padX = isPolaroid ? 24 : 0;
+  const padY = isPolaroid ? 24 : isFilm ? 16 : 0;
+  const bottomPad = isPolaroid ? 100 : isFilm ? 16 : 0;
+
+  const photoW = cols * SLOT + (cols - 1) * GAP;
+  const photoH = rows * SLOT + (rows - 1) * GAP;
+  const w = photoW + padX * 2 + RAIL * 2;
+  const h = photoH + padY + bottomPad;
 
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
 
-  // Background per template
-  if (templateId === "polaroid") ctx.fillStyle = "#ffffff";
-  else if (templateId === "vintage") ctx.fillStyle = "#c9a882";
-  else if (templateId === "film") ctx.fillStyle = "#09090b";
-  else ctx.fillStyle = "#0c0c14";
+  // Background
+  ctx.fillStyle = isPolaroid ? "#fff" : "#000";
   ctx.fillRect(0, 0, w, h);
 
-  // Film sprocket strip
-  if (templateId === "film") {
-    ctx.fillStyle = "#050505";
-    ctx.fillRect(0, 0, w, 24);
-    ctx.fillRect(0, h - 24, w, 24);
+  // Film sprocket rails
+  if (isFilm) {
+    const HOLE_W = 32;
+    const HOLE_H = 44;
+    const holeCount = rows * 5 + 2;
+    const spacing = h / (holeCount + 1);
+    const drawRail = (railX: number) => {
+      for (let i = 1; i <= holeCount; i++) {
+        const hx = railX + (RAIL - HOLE_W) / 2;
+        const hy = i * spacing - HOLE_H / 2;
+        ctx.beginPath();
+        ctx.roundRect(hx, hy, HOLE_W, HOLE_H, 4);
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.fill();
+      }
+    };
+    drawRail(0);
+    drawRail(w - RAIL);
   }
 
-  // Draw frames
+  // Draw photos
   await Promise.all(
-    capturedFrames.slice(0, cols * rows).map((frame, i) => {
-      return new Promise<void>((resolve) => {
+    capturedFrames.slice(0, cols * rows).map((frame, i) =>
+      new Promise<void>((resolve) => {
         const img = new window.Image();
         img.onload = () => {
           const col = i % cols;
           const row = Math.floor(i / cols);
-          const filmOffset = templateId === "film" ? 24 : 0;
-          const x = pad + col * (EXPORT_SLOT + EXPORT_GAP);
-          const y = pad + filmOffset + row * (EXPORT_SLOT + EXPORT_GAP);
-          ctx.drawImage(img, x, y, EXPORT_SLOT, EXPORT_SLOT);
+          const x = RAIL + padX + col * (SLOT + GAP);
+          const y = padY + row * (SLOT + GAP);
+          ctx.drawImage(img, x, y, SLOT, SLOT);
           resolve();
         };
         img.src = frame.dataUrl;
-      });
-    })
+      })
+    )
   );
 
   // Watermark
-  ctx.fillStyle = "rgba(255,255,255,0.25)";
-  ctx.font = "bold 20px sans-serif";
+  ctx.fillStyle = isPolaroid ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.2)";
+  ctx.font = "bold 18px sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText("pitik.io", w - 12, h - 10);
+  ctx.fillText("pitik.io", w - RAIL - 8, h - 8);
 
   const link = document.createElement("a");
   link.download = "pitik-booth.png";

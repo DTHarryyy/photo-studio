@@ -123,22 +123,11 @@ function TemplateFrame({
 
   if (templateId === "film") {
     return (
-      <div className="mx-1.5 mb-1.5 overflow-hidden rounded-lg bg-zinc-950">
-        <SprocketRow />
-        <div className="bg-zinc-900">{children}</div>
-        <SprocketRow />
-      </div>
-    );
-  }
-
-  if (templateId === "vintage") {
-    return (
-      <div
-        className="mx-1.5 mb-1.5 overflow-hidden rounded-sm p-1.5"
-        style={{ background: "linear-gradient(145deg,#c9a882,#a17c5b)" }}
-      >
-        <div className="overflow-hidden rounded-[1px] ring-1 ring-black/10">
-          {children}
+      <div className="mx-1 mb-1 overflow-hidden rounded-md" style={{ background: "#000" }}>
+        <div className="flex items-stretch">
+          <FilmSprocketRail />
+          <div className="flex-1 py-2 px-0.5">{children}</div>
+          <FilmSprocketRail />
         </div>
       </div>
     );
@@ -150,11 +139,18 @@ function TemplateFrame({
   );
 }
 
-function SprocketRow() {
+function FilmSprocketRail() {
   return (
-    <div className="flex h-3 items-center justify-around bg-zinc-950 px-1">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-1.5 w-1 rounded-[1px] bg-zinc-800" />
+    <div
+      className="flex w-3 flex-col items-center justify-around py-2"
+      style={{ background: "#000" }}
+    >
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div
+          key={i}
+          className="w-2 flex-shrink-0 rounded-[1px]"
+          style={{ height: 5, background: "rgba(255,255,255,0.75)" }}
+        />
       ))}
     </div>
   );

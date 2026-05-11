@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
+import { useCameraStore } from "@/features/camera/store/camera.store";
 
 interface Props {
   onCapture: () => void;
@@ -21,6 +22,8 @@ export function StudioCaptureBar({
   capturedFrames,
   count,
 }: Props) {
+  const { toggleFacingMode } = useCameraStore();
+
   return (
     <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-3 pb-safe-bottom pb-8 sm:pb-10">
 
@@ -52,19 +55,15 @@ export function StudioCaptureBar({
       {/* Controls row */}
       <div className="flex items-center gap-8">
 
-        {/* Retake */}
+        {/* Flip camera */}
         <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onRetake}
-          aria-label="Retake all"
+          whileTap={{ rotate: 180, scale: 0.9 }}
+          onClick={toggleFacingMode}
+          aria-label="Flip camera"
           className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-black/50 text-white/60 backdrop-blur-xl transition-colors hover:border-white/25 hover:text-white"
         >
-          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-            <path
-              fillRule="evenodd"
-              d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z"
-              clipRule="evenodd"
-            />
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M20 7h-3.382l-1.724-3.447A1 1 0 0 0 14 3H10a1 1 0 0 0-.894.553L7.382 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-8 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
           </svg>
         </motion.button>
 

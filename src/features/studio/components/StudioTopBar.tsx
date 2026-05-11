@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useCameraStore } from "@/features/camera/store/camera.store";
 
 interface Props {
   capturedCount: number;
@@ -19,8 +18,6 @@ export function StudioTopBar({
   onToggleDrawer,
   onReset,
 }: Props) {
-  const { facingMode, toggleFacingMode } = useCameraStore();
-
   return (
     <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 pt-safe-top pt-4 sm:px-5">
 
@@ -74,17 +71,6 @@ export function StudioTopBar({
 
       {/* Right controls */}
       <div className="flex items-center gap-2">
-
-        {/* Flip camera */}
-        <button
-          onClick={toggleFacingMode}
-          aria-label={facingMode === "user" ? "Switch to rear camera" : "Switch to front camera"}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/60 backdrop-blur-xl transition-all hover:border-white/25 hover:bg-black/60 hover:text-white active:scale-95 active:[transform:rotateY(180deg)]"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-            <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0V5.36l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
-          </svg>
-        </button>
 
         <button
           onClick={onReset}

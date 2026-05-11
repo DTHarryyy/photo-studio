@@ -233,10 +233,9 @@ function StyleTab({
 // ─── Template tab ─────────────────────────────────────────────────────────────
 
 const TEMPLATE_VISUALS: Record<TemplateId, { bg: string; border: string; extra?: string }> = {
-  none:     { bg: "bg-zinc-800",  border: "border-white/10" },
-  polaroid: { bg: "bg-white",     border: "border-white/20", extra: "pb-5" },
-  film:     { bg: "bg-zinc-950",  border: "border-zinc-700" },
-  vintage:  { bg: "bg-[#c9a882]", border: "border-[#a17c5b]" },
+  none:     { bg: "bg-zinc-800", border: "border-white/10" },
+  polaroid: { bg: "bg-white",    border: "border-white/20", extra: "pb-5" },
+  film:     { bg: "bg-black",    border: "border-zinc-800" },
 };
 
 function TemplateTab({
@@ -271,29 +270,46 @@ function TemplateTab({
               {/* Frame style preview */}
               <div className="p-2.5">
                 <div className="aspect-square w-full overflow-hidden rounded-lg bg-black/40">
-                  <div className={cn("h-full w-full flex flex-col")}>
-                    {tpl.id === "film" && <FilmStrip />}
-                    <div className={cn(
-                      "flex-1 m-1 rounded-sm overflow-hidden",
-                      vis.bg, vis.border, "border",
-                      vis.extra
-                    )}>
-                      <div className="grid h-full grid-cols-2 grid-rows-2 gap-0.5 p-0.5">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              "rounded-[1px]",
-                              tpl.id === "polaroid" ? "bg-zinc-200" :
-                              tpl.id === "vintage"  ? "bg-[#a17c5b]/60" :
-                              "bg-white/15"
-                            )}
-                          />
+                  {tpl.id === "film" ? (
+                    /* Film: vertical sprocket rails left + right */
+                    <div className="flex h-full" style={{ background: "#000" }}>
+                      <div className="flex w-3 flex-col items-center justify-around py-1.5">
+                        {Array.from({ length: 7 }).map((_, i) => (
+                          <div key={i} className="h-1.5 w-2 rounded-[1px] bg-white/80" />
+                        ))}
+                      </div>
+                      <div className="flex flex-1 flex-col gap-0.5 py-1.5 px-0.5">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <div key={i} className="flex-1 bg-white/10 rounded-[1px]" />
+                        ))}
+                      </div>
+                      <div className="flex w-3 flex-col items-center justify-around py-1.5">
+                        {Array.from({ length: 7 }).map((_, i) => (
+                          <div key={i} className="h-1.5 w-2 rounded-[1px] bg-white/80" />
                         ))}
                       </div>
                     </div>
-                    {tpl.id === "film" && <FilmStrip />}
-                  </div>
+                  ) : (
+                    <div className={cn("h-full w-full flex flex-col")}>
+                      <div className={cn(
+                        "flex-1 m-1 rounded-sm overflow-hidden",
+                        vis.bg, vis.border, "border",
+                        vis.extra
+                      )}>
+                        <div className="grid h-full grid-cols-2 grid-rows-2 gap-0.5 p-0.5">
+                          {Array.from({ length: 4 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "rounded-[1px]",
+                                tpl.id === "polaroid" ? "bg-zinc-200" : "bg-white/15"
+                              )}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -311,16 +327,6 @@ function TemplateTab({
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function FilmStrip() {
-  return (
-    <div className="flex h-2.5 items-center justify-around bg-zinc-950 px-1">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="h-1.5 w-0.5 rounded-[1px] bg-zinc-700" />
-      ))}
     </div>
   );
 }

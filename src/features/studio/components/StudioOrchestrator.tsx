@@ -35,17 +35,16 @@ export const LAYOUT_LIST: { id: LayoutId; name: string; cols: number; rows: numb
 
 // ─── Studio templates ─────────────────────────────────────────────────────────
 
-export type TemplateId = "none" | "polaroid" | "film" | "vintage";
+export type TemplateId = "none" | "polaroid" | "film";
 
 export const STUDIO_TEMPLATES: {
   id: TemplateId;
   name: string;
   description: string;
 }[] = [
-  { id: "none",     name: "None",     description: "Clean, no frame"       },
-  { id: "polaroid", name: "Polaroid", description: "Classic white border"  },
-  { id: "film",     name: "Film",     description: "Cinematic film strip"  },
-  { id: "vintage",  name: "Vintage",  description: "Warm aged border"      },
+  { id: "none",     name: "None",     description: "Clean, no frame"      },
+  { id: "polaroid", name: "Polaroid", description: "Classic white border" },
+  { id: "film",     name: "Film",     description: "35mm film strip"      },
 ];
 
 // ─── Style packs ──────────────────────────────────────────────────────────────
