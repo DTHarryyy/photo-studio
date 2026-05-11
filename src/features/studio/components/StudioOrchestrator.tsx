@@ -49,11 +49,11 @@ export function StudioOrchestrator({ layout }: Props) {
     LAYOUT_MAP[layout as keyof typeof LAYOUT_MAP] ?? LAYOUT_MAP["2side"];
   const { cols, rows, count } = layoutConfig;
 
-  const [activeTab, setActiveTab]           = useState<TabId>("style");
+  const [activeTab, setActiveTab]             = useState<TabId>("style");
   const [activeStylePack, setActiveStylePack] = useState("minimal");
 
   const { videoRef, capture } = useCamera();
-  const { capturedFrames, clearFrames } = useCameraStore();
+  const { capturedFrames, clearFrames, cameraStatus } = useCameraStore();
 
   // Clear any leftover frames from a previous session on mount
   useEffect(() => { clearFrames(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -61,6 +61,9 @@ export function StudioOrchestrator({ layout }: Props) {
   const capturedCount = Math.min(capturedFrames.length, count);
   const isDone        = capturedCount >= count;
   const stylePack     = STYLE_PACKS.find((p) => p.id === activeStylePack) ?? STYLE_PACKS[0];
+  const cameraReady   = cameraStatus === "active";
+  const cameraBlocked = cameraStatus === "denied";
+  const cameraFailed  = cameraStatus === "error";
 
   function handleCapture() {
     if (!isDone) capture();
@@ -125,7 +128,7 @@ export function StudioOrchestrator({ layout }: Props) {
       <div className="flex flex-1 overflow-hidden">
 
         {/* Left: Camera panel */}
-        <div className="relative flex w-52 flex-shrink-0 flex-col overflow-hidden border-r border-white/8">
+        <div className="relative flex w-80 flex-shrink-0 flex-col overflow-hidden border-r border-white/8">
           {/* Camera feed */}
           <div className="relative flex-1 overflow-hidden bg-black">
             <video
@@ -136,8 +139,49 @@ export function StudioOrchestrator({ layout }: Props) {
               className="h-full w-full object-cover"
             />
 
+            {/* Requesting permission overlay */}
+            {(cameraStatus === "idle" || cameraStatus === "requesting") && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black">
+                <svg className="h-8 w-8 animate-pulse text-zinc-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0 0 21 18v-1.94l-2.69-2.689a1.5 1.5 0 0 0-2.12 0l-2.5 2.5-1.97-1.97a1.5 1.5 0 0 0-2.12 0L3 16.06Zm10.125-7.81a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Z" clipRule="evenodd" />
+                </svg>
+                <p className="text-xs text-zinc-500">
+                  {cameraStatus === "idle" ? "Initialising…" : "Allow camera access when prompted"}
+                </p>
+              </div>
+            )}
+
+            {/* Permission denied overlay */}
+            {cameraBlocked && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black px-5 text-center">
+                <svg className="h-8 w-8 text-red-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-300">Camera access denied</p>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-600">
+                    Click the camera icon in your browser&apos;s address bar and allow access, then reload.
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="rounded-full border border-white/15 px-4 py-1.5 text-xs text-zinc-400 transition-colors hover:border-white/30 hover:text-white"
+                >
+                  Reload page
+                </button>
+              </div>
+            )}
+
+            {/* Generic error overlay */}
+            {cameraFailed && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black px-5 text-center">
+                <p className="text-sm font-semibold text-zinc-300">Camera unavailable</p>
+                <p className="text-xs text-zinc-600">No camera was found or it&apos;s already in use.</p>
+              </div>
+            )}
+
             {/* Photo count badge */}
-            {capturedCount > 0 && (
+            {capturedCount > 0 && cameraReady && (
               <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                 Photo {capturedCount} of {count}
               </div>

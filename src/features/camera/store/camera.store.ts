@@ -2,14 +2,18 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import type { CapturedFrame, FacingMode } from "../types/camera.types";
 
+export type CameraStatus = "idle" | "requesting" | "active" | "denied" | "error";
+
 interface CameraState {
   stream: MediaStream | null;
   facingMode: FacingMode;
   capturedFrames: CapturedFrame[];
+  cameraStatus: CameraStatus;
   setStream: (stream: MediaStream | null) => void;
   toggleFacingMode: () => void;
   addFrame: (frame: CapturedFrame) => void;
   clearFrames: () => void;
+  setCameraStatus: (status: CameraStatus) => void;
 }
 
 export const useCameraStore = create<CameraState>()(
@@ -17,11 +21,13 @@ export const useCameraStore = create<CameraState>()(
     stream: null,
     facingMode: "user",
     capturedFrames: [],
+    cameraStatus: "idle",
     setStream: (stream) => set({ stream }),
     toggleFacingMode: () =>
       set((s) => ({ facingMode: s.facingMode === "user" ? "environment" : "user" })),
     addFrame: (frame) =>
       set((s) => ({ capturedFrames: [...s.capturedFrames, frame] })),
     clearFrames: () => set({ capturedFrames: [] }),
+    setCameraStatus: (cameraStatus) => set({ cameraStatus }),
   }))
 );

@@ -10,16 +10,17 @@ export function useCamera() {
     typeof document !== "undefined" ? document.createElement("canvas") : null
   );
 
-  const { facingMode, setStream, addFrame } = useCameraStore();
+  const { facingMode, setStream, addFrame, setCameraStatus } = useCameraStore();
 
   useEffect(() => {
     let active = true;
     let currentStream: MediaStream | null = null;
 
     async function startStream() {
+      setCameraStatus("requesting");
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode },
+          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: false,
         });
         if (!active) {
@@ -31,8 +32,11 @@ export function useCamera() {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-      } catch {
-        // Permission denied or no camera — handled by UI layer
+        setCameraStatus("active");
+      } catch (err) {
+        if (!active) return;
+        const name = err instanceof Error ? err.name : "";
+        setCameraStatus(name === "NotAllowedError" ? "denied" : "error");
       }
     }
 
@@ -43,7 +47,7 @@ export function useCamera() {
       currentStream?.getTracks().forEach((t) => t.stop());
       setStream(null);
     };
-  }, [facingMode, setStream]);
+  }, [facingMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function capture() {
     const video = videoRef.current;
