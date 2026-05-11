@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const BASE =
@@ -8,8 +9,8 @@ export function HeroCTA() {
     <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
 
       {/* Primary — gradient with slow glow pulse */}
-      <a
-        href="#templates"
+      <Link
+        href="/booth"
         className={cn(
           BASE,
           "animate-cta-glow",
@@ -18,8 +19,8 @@ export function HeroCTA() {
           "hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-100"
         )}
       >
-        Try Templates <span aria-hidden>→</span>
-      </a>
+        Try Booth <span aria-hidden>→</span>
+      </Link>
 
       {/* Secondary — premium glass */}
       <a

@@ -100,3 +100,14 @@ body {
 .animate-ring-pulse {
   animation: ring-pulse 2s ease-in-out infinite;
 }
+
+/* ─── Booth page — panel + card entrance animations ─────────────────────────
+   fade-in-up: subtle upward drift used for preview panel content on mount.
+   ─────────────────────────────────────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.25s ease-out forwards;
+}
