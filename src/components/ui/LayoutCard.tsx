@@ -125,7 +125,8 @@ export function LayoutCard({
         // Depth shadow + glow
         t.shadow,
         // Selected: neon ring
-        selected && ["ring-2 ring-offset-2 ring-offset-zinc-950", t.ring],
+        selected && "ring-2 ring-offset-2 ring-offset-zinc-950",
+        selected && t.ring,
         className
       )}
     >
