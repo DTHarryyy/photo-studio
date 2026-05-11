@@ -45,7 +45,12 @@ export function StudioPreviewCard({
       initial={{ opacity: 0, scale: 0.8, y: 16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: "spring", delay: 0.4, damping: 22, stiffness: 260 }}
-      className="absolute bottom-32 right-4 z-20 sm:bottom-36 sm:right-5"
+      drag
+      dragMomentum={false}
+      dragElastic={0.1}
+      whileDrag={{ scale: 1.06, opacity: 0.92 }}
+      className="absolute bottom-32 right-4 z-20 cursor-grab active:cursor-grabbing sm:bottom-36 sm:right-5"
+      style={{ touchAction: "none" }}
     >
       <div
         className="animate-float-b overflow-hidden rounded-2xl shadow-2xl"
@@ -221,6 +226,7 @@ function LiveSlot({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.7 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); onRetake(); }}
             aria-label={`Retake photo ${index + 1}`}
             className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-sm transition-colors hover:bg-black/90"

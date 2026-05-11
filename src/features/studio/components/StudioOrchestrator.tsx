@@ -142,8 +142,6 @@ export function StudioOrchestrator({ layout }: Props) {
         {isLive && phase === "capture" && (
           <StudioCaptureBar
             isDone={isDone}
-            capturedFrames={capturedFrames}
-            count={count}
             onCapture={capture}
             onRetake={clearFrames}
             onContinue={() => setPhase("edit")}
