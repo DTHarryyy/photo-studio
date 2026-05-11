@@ -25,12 +25,16 @@ export const useCanvasStore = create<CanvasState>()(
       set((s) => ({ layers: s.layers.filter((l) => l.id !== id) })),
     updateLayer: (id, patch) =>
       set((s) => ({
-        layers: s.layers.map((l) => (l.id === id ? { ...l, ...patch } : l)),
+        layers: s.layers.map((l) =>
+          l.id === id ? ({ ...l, ...patch } as CanvasLayer) : l
+        ),
       })),
     selectLayer: (id) => set({ selectedLayerId: id }),
     reorderLayer: (id, newZIndex) =>
       set((s) => ({
-        layers: s.layers.map((l) => (l.id === id ? { ...l, zIndex: newZIndex } : l)),
+        layers: s.layers.map((l) =>
+          l.id === id ? ({ ...l, zIndex: newZIndex } as CanvasLayer) : l
+        ),
       })),
     setViewport: (viewport) => set({ viewport }),
   }))

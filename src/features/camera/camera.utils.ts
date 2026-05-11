@@ -1,4 +1,4 @@
-import type { CapturedFrame } from "../types/camera.types";
+import type { CapturedFrame } from "./types/camera.types";
 
 export function frameToDataUrl(
   video: HTMLVideoElement,
