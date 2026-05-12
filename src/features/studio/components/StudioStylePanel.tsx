@@ -18,15 +18,28 @@ const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
 // ─── Filter definitions ───────────────────────────────────────────────────────
 
 const PHOTO_FILTERS: { id: string; name: string; css: string }[] = [
-  { id: "none",     name: "OG",      css: "" },
-  { id: "noir",     name: "Noir",    css: "grayscale(1)" },
-  { id: "amber",    name: "Amber",   css: "sepia(0.9)" },
-  { id: "pop",      name: "Pop",     css: "saturate(1.5) contrast(1.05)" },
-  { id: "golden",   name: "Golden",  css: "sepia(0.35) saturate(1.3) brightness(1.05)" },
-  { id: "frost",    name: "Frost",   css: "hue-rotate(190deg) saturate(0.85) brightness(1.05)" },
-  { id: "haze",     name: "Haze",    css: "brightness(1.15) contrast(0.8) saturate(0.75)" },
-  { id: "ink",      name: "Ink",     css: "contrast(1.45) brightness(0.85) saturate(0.7)" },
-  { id: "kodak",    name: "Kodak",   css: "grayscale(1) contrast(1.15) brightness(0.9)" },
+  { id: "none",       name: "OG",         css: "" },
+  { id: "cute",       name: "Cute",       css: "brightness(1.12) contrast(0.88) saturate(1.4) hue-rotate(340deg)" },
+  { id: "clarendon",  name: "Clarendon",  css: "brightness(1.08) contrast(1.25) saturate(1.35)" },
+  { id: "lark",       name: "Lark",       css: "brightness(1.1) contrast(0.9) saturate(1.1) sepia(0.1)" },
+  { id: "juno",       name: "Juno",       css: "sepia(0.15) saturate(1.5) contrast(1.05) brightness(1.05)" },
+  { id: "reyes",      name: "Reyes",      css: "sepia(0.3) brightness(1.1) contrast(0.85) saturate(0.75)" },
+  { id: "crema",      name: "Crema",      css: "sepia(0.5) brightness(1.08) contrast(0.85) saturate(0.85)" },
+  { id: "valencia",   name: "Valencia",   css: "sepia(0.2) brightness(1.1) contrast(1.1) saturate(1.2)" },
+  { id: "aden",       name: "Aden",       css: "hue-rotate(340deg) saturate(0.85) brightness(1.1) contrast(0.9)" },
+  { id: "slumber",    name: "Slumber",    css: "saturate(0.65) brightness(1.08) hue-rotate(5deg)" },
+  { id: "moon",       name: "Moon",       css: "grayscale(1) brightness(1.1) contrast(1.05)" },
+  { id: "noir",       name: "Noir",       css: "grayscale(1) contrast(1.3) brightness(0.88)" },
+  { id: "inkwell",    name: "Inkwell",    css: "grayscale(1) sepia(0.4) contrast(1.1) brightness(0.95)" },
+  { id: "charcoal",   name: "Charcoal",   css: "grayscale(1) contrast(1.6) brightness(0.8)" },
+  { id: "silver",     name: "Silver",     css: "grayscale(0.9) brightness(1.15) contrast(0.9)" },
+  { id: "amber",      name: "Amber",      css: "sepia(0.9) contrast(1.05)" },
+  { id: "golden",     name: "Golden",     css: "sepia(0.35) saturate(1.3) brightness(1.05)" },
+  { id: "rust",       name: "Rust",       css: "sepia(0.6) saturate(1.2) hue-rotate(340deg) contrast(1.1)" },
+  { id: "haze",       name: "Haze",       css: "brightness(1.15) contrast(0.8) saturate(0.75)" },
+  { id: "ink",        name: "Ink",        css: "contrast(1.45) brightness(0.85) saturate(0.7)" },
+  { id: "frost",      name: "Frost",      css: "hue-rotate(190deg) saturate(0.85) brightness(1.05)" },
+  { id: "pop",        name: "Pop",        css: "saturate(1.5) contrast(1.05)" },
 ];
 
 interface LayoutOption {
