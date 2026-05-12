@@ -7,12 +7,36 @@ import type { StylePack } from "./StudioPreviewCard";
 import type { LayoutId, TemplateId } from "./StudioOrchestrator";
 import type { PhotoFilter } from "@/features/photobooth/store/useLayerStore";
 
-type Tab = "style" | "template" | "layout" | "filter";
+type Tab = "style" | "template" | "layout" | "filter" | "bg";
 const TABS: { id: Tab; label: string }[] = [
   { id: "style",    label: "Style"    },
   { id: "template", label: "Template" },
   { id: "layout",   label: "Layout"   },
   { id: "filter",   label: "Filter"   },
+  { id: "bg",       label: "BG"       },
+];
+
+// ─── Background assets ────────────────────────────────────────────────────────
+
+const PHOTO_BACKGROUNDS: string[] = [
+  "/assets/styles_background/%23wallpaper%20%23star_.jpg",
+  "/assets/styles_background/Denimmmmmm.jpg",
+  "/assets/styles_background/blue%20stars%20%F0%9F%92%99_.jpg",
+  "/assets/styles_background/download.jpg",
+  "/assets/styles_background/download%20(1).jpg",
+  "/assets/styles_background/download%20(2).jpg",
+  "/assets/styles_background/download%20(3).jpg",
+  "/assets/styles_background/download%20(4).jpg",
+  "/assets/styles_background/download%20(5).jpg",
+  "/assets/styles_background/download%20(6).jpg",
+  "/assets/styles_background/download%20(7).jpg",
+  "/assets/styles_background/download%20(8).jpg",
+  "/assets/styles_background/download%20(9).jpg",
+  "/assets/styles_background/download%20(10).jpg",
+  "/assets/styles_background/download%20(11).jpg",
+  "/assets/styles_background/download%20(12).jpg",
+  "/assets/styles_background/download%20(13).jpg",
+  "/assets/styles_background/download%20(14).jpg",
 ];
 
 const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
@@ -73,6 +97,8 @@ interface Props {
   onTemplateChange: (id: TemplateId) => void;
   activeFilter: PhotoFilter | null;
   onFilterChange: (filter: PhotoFilter | null) => void;
+  activeBackground: string | null;
+  onBackgroundChange: (bg: string | null) => void;
   onClose: () => void;
 }
 
@@ -81,6 +107,7 @@ export function StudioStylePanel({
   layouts, activeLayout, onLayoutChange,
   templates, activeTemplate, onTemplateChange,
   activeFilter, onFilterChange,
+  activeBackground, onBackgroundChange,
   onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>("style");
@@ -112,6 +139,7 @@ export function StudioStylePanel({
           layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
           templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange}
           activeFilter={activeFilter} onFilterChange={onFilterChange}
+          activeBackground={activeBackground} onBackgroundChange={onBackgroundChange}
           onClose={onClose}
         />
       </motion.div>
@@ -134,6 +162,7 @@ export function StudioStylePanel({
           layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
           templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange}
           activeFilter={activeFilter} onFilterChange={onFilterChange}
+          activeBackground={activeBackground} onBackgroundChange={onBackgroundChange}
           onClose={onClose}
         />
       </motion.div>
@@ -149,6 +178,7 @@ function PanelContent({
   layouts, activeLayout, onLayoutChange,
   templates, activeTemplate, onTemplateChange,
   activeFilter, onFilterChange,
+  activeBackground, onBackgroundChange,
   onClose,
 }: {
   tab: Tab;
@@ -164,6 +194,8 @@ function PanelContent({
   onTemplateChange: (id: TemplateId) => void;
   activeFilter: PhotoFilter | null;
   onFilterChange: (filter: PhotoFilter | null) => void;
+  activeBackground: string | null;
+  onBackgroundChange: (bg: string | null) => void;
   onClose: () => void;
 }) {
   return (
@@ -212,6 +244,7 @@ function PanelContent({
           <LayoutTab layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange} />
         )}
         {tab === "filter" && <FilterTab activeFilter={activeFilter} onFilterChange={onFilterChange} />}
+        {tab === "bg" && <BackgroundTab activeBackground={activeBackground} onBackgroundChange={onBackgroundChange} />}
       </div>
     </div>
   );
@@ -543,3 +576,65 @@ function FilterTab({
   );
 }
 
+// ─── Background tab ───────────────────────────────────────────────────────────
+
+function BackgroundTab({
+  activeBackground,
+  onBackgroundChange,
+}: {
+  activeBackground: string | null;
+  onBackgroundChange: (bg: string | null) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+        Backgrounds
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+
+        {/* None tile */}
+        <button
+          onClick={() => onBackgroundChange(null)}
+          className={cn(
+            "relative aspect-square overflow-hidden rounded-xl border transition-all duration-150",
+            activeBackground === null
+              ? "border-violet-500/70 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
+              : "border-white/8 hover:border-white/20"
+          )}
+        >
+          <div className="flex h-full w-full items-center justify-center bg-zinc-900">
+            <svg className="h-5 w-5 text-zinc-600" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+              <path d="M4 4l12 12M16 4L4 16" />
+            </svg>
+          </div>
+          {activeBackground === null && (
+            <div className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-violet-500" />
+          )}
+        </button>
+
+        {/* Image tiles — no labels, image speaks for itself */}
+        {PHOTO_BACKGROUNDS.map((src) => {
+          const isActive = activeBackground === src;
+          return (
+            <button
+              key={src}
+              onClick={() => onBackgroundChange(src)}
+              className={cn(
+                "relative aspect-square overflow-hidden rounded-xl border transition-all duration-150 hover:scale-[1.04] active:scale-[0.97]",
+                isActive
+                  ? "border-violet-500/70 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
+                  : "border-white/8 hover:border-white/20"
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt="" className="h-full w-full object-cover" draggable={false} />
+              {isActive && (
+                <div className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-violet-500" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

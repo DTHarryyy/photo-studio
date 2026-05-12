@@ -90,6 +90,8 @@ export function StudioOrchestrator({ layout }: Props) {
   const clearLayers = useLayerStore((s) => s.clearLayers);
   const photoFilter = useLayerStore((s) => s.photoFilter);
   const setPhotoFilter = useLayerStore((s) => s.setPhotoFilter);
+  const photoBackground = useLayerStore((s) => s.photoBackground);
+  const setPhotoBackground = useLayerStore((s) => s.setPhotoBackground);
 
   useEffect(() => {
     clearFrames();
@@ -125,6 +127,7 @@ export function StudioOrchestrator({ layout }: Props) {
         cameraStatus={cameraStatus}
         templateId={activeTemplate}
         photoFilter={photoFilter}
+        photoBackground={photoBackground}
         onRetakeSlot={removeFrame}
         onReload={() => window.location.reload()}
       />
@@ -197,6 +200,8 @@ export function StudioOrchestrator({ layout }: Props) {
             onTemplateChange={setActiveTemplate}
             activeFilter={photoFilter}
             onFilterChange={setPhotoFilter}
+            activeBackground={photoBackground}
+            onBackgroundChange={setPhotoBackground}
             onClose={() => setStyleOpen(false)}
           />
         )}

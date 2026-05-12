@@ -73,6 +73,7 @@ interface Props {
   cameraStatus: CameraStatus;
   templateId: TemplateId;
   photoFilter: PhotoFilter | null;
+  photoBackground: string | null;
   onRetakeSlot: (i: number) => void;
   onReload: () => void;
 }
@@ -87,6 +88,7 @@ export function StudioLiveGrid({
   cameraStatus,
   templateId,
   photoFilter,
+  photoBackground,
   onRetakeSlot,
   onReload,
 }: Props) {
@@ -102,6 +104,10 @@ export function StudioLiveGrid({
   const S = slotSize / 120;
   const isFilm      = templateId === "film";
   const isPolaroid  = templateId === "polaroid";
+
+  const bgStyle = photoBackground
+    ? { backgroundImage: `url(${photoBackground})`, backgroundSize: "cover" as const, backgroundPosition: "center" as const }
+    : {};
   const isInstax    = templateId === "instax";
   const isVintage   = templateId === "vintage";
   const isMinimal   = templateId === "minimal";
@@ -200,7 +206,7 @@ export function StudioLiveGrid({
     const pad = Math.round(12 * S);
     const pb  = Math.round(48 * S);
     content = (
-      <div style={{ background: "#FFFDF5", padding: pad, paddingBottom: pb, borderRadius: Math.round(3*S), boxShadow: "0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1)" }}>
+      <div style={{ background: "#FFFDF5", ...bgStyle, padding: pad, paddingBottom: pb, borderRadius: Math.round(3*S), boxShadow: "0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1)" }}>
         <div style={{ overflow: "hidden", borderRadius: Math.round(1*S) }}>{grid}</div>
         <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginTop: Math.round(8*S) }} />
       </div>
@@ -216,7 +222,7 @@ export function StudioLiveGrid({
       </div>
     ));
     content = (
-      <div className="overflow-hidden rounded-sm shadow-2xl" style={{ background: "#000" }}>
+      <div className="overflow-hidden rounded-sm shadow-2xl" style={{ background: "#000", ...bgStyle }}>
         <div style={{ height: Math.max(2, Math.round(3*S)), background: "rgba(210,100,0,0.55)" }} />
         <div className="flex items-stretch">
           <FilmRail railW={RAIL_W} holeCount={holeCount} />
@@ -236,7 +242,7 @@ export function StudioLiveGrid({
     const pb  = Math.round(52 * S);
     content = (
       <div
-        style={{ background: "#FAFAF8", padding: pad, paddingBottom: pb, borderRadius: Math.round(6 * S) }}
+        style={{ background: "#FAFAF8", ...bgStyle, padding: pad, paddingBottom: pb, borderRadius: Math.round(6 * S) }}
         className="shadow-2xl"
       >
         <div style={{ overflow: "hidden", borderRadius: Math.round(2 * S) }}>{grid}</div>
@@ -247,7 +253,7 @@ export function StudioLiveGrid({
     const inner = Math.round(4 * S);
     content = (
       <div
-        style={{ background: "#F5EDD6", padding: pad, borderRadius: Math.round(2 * S) }}
+        style={{ background: "#F5EDD6", ...bgStyle, padding: pad, borderRadius: Math.round(2 * S) }}
         className="shadow-2xl"
       >
         <div
@@ -265,7 +271,7 @@ export function StudioLiveGrid({
     const pad = Math.round(12 * S);
     content = (
       <div
-        style={{ background: "#fff", padding: pad }}
+        style={{ background: "#fff", ...bgStyle, padding: pad }}
         className="shadow-2xl"
       >
         <div style={{ overflow: "hidden" }}>{grid}</div>
@@ -275,7 +281,7 @@ export function StudioLiveGrid({
     const pad = Math.round(12 * S);
     content = (
       <div
-        style={{ background: "#111", padding: pad, borderRadius: Math.round(6 * S) }}
+        style={{ background: "#111", ...bgStyle, padding: pad, borderRadius: Math.round(6 * S) }}
         className="shadow-2xl ring-1 ring-white/5"
       >
         <div style={{ overflow: "hidden", borderRadius: Math.round(3 * S) }}>{grid}</div>
@@ -288,7 +294,7 @@ export function StudioLiveGrid({
     const tapeH    = Math.max(3,  Math.round(5  * S));
     const tb       = { position: "absolute" as const, width: tapeW, height: tapeH, background: "rgba(255,255,220,0.82)", zIndex: 2 };
     content = (
-      <div style={{ background: "#C8956C", padding: outerPad, borderRadius: Math.round(4*S) }} className="shadow-2xl">
+      <div style={{ background: "#C8956C", ...bgStyle, padding: outerPad, borderRadius: Math.round(4*S) }} className="shadow-2xl">
         <div className="relative" style={{ background: "#EED9B8", padding: innerPad }}>
           {grid}
           {Array.from({ length: count }).map((_, i) => {
@@ -308,7 +314,7 @@ export function StudioLiveGrid({
   } else if (isNeon) {
     const pad = Math.round(12 * S);
     content = (
-      <div style={{ background: "#050508", padding: pad, borderRadius: Math.round(8*S) }} className="shadow-2xl">
+      <div style={{ background: "#050508", ...bgStyle, padding: pad, borderRadius: Math.round(8*S) }} className="shadow-2xl">
         {grid}
       </div>
     );
@@ -317,7 +323,7 @@ export function StudioLiveGrid({
     const hr   = Math.max(8, Math.round(10 * S));
     const hs   = { position: "absolute" as const, color: "#D8A0C8", fontSize: hr, lineHeight: 1, opacity: 0.75 };
     content = (
-      <div className="relative shadow-2xl" style={{ background: "#F0EBFF", padding: pad, borderRadius: Math.round(16*S) }}>
+      <div className="relative shadow-2xl" style={{ background: "#F0EBFF", ...bgStyle, padding: pad, borderRadius: Math.round(16*S) }}>
         <span style={{ ...hs, top: Math.round(4*S), left: Math.round(6*S) }}>♥</span>
         <span style={{ ...hs, top: Math.round(4*S), right: Math.round(6*S) }}>♥</span>
         <span style={{ ...hs, bottom: Math.round(4*S), left: Math.round(6*S) }}>♥</span>
@@ -331,7 +337,7 @@ export function StudioLiveGrid({
     const footerH = Math.round(18 * S);
     const date    = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     content = (
-      <div style={{ background: "#fff", paddingLeft: pad, paddingRight: pad }} className="shadow-2xl">
+      <div style={{ background: "#fff", ...bgStyle, paddingLeft: pad, paddingRight: pad }} className="shadow-2xl">
         <div style={{ height: headerH, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #e5e5e5" }}>
           <span style={{ fontSize: Math.max(6, Math.round(7*S)), fontWeight: 700, letterSpacing: "0.14em", color: "#111", textTransform: "uppercase" as const }}>PHOTO BOOTH</span>
         </div>

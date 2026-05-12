@@ -16,6 +16,7 @@ interface Props {
   slotSize?: number;
   /** Filter to apply to all photo slots. Overrides template defaults. */
   photoFilter?: PhotoFilter | null;
+  photoBackground?: string | null;
 }
 
 export function CompositeOutput({
@@ -26,6 +27,7 @@ export function CompositeOutput({
   templateId,
   slotSize = 120,
   photoFilter,
+  photoBackground,
 }: Props) {
   const S = slotSize / 120;
   const gap = Math.round(3 * S);
@@ -35,6 +37,10 @@ export function CompositeOutput({
     : (isFilm ? "grayscale(1)" : undefined);
 
   const isNeon = templateId === "neon";
+
+  const bgStyle = photoBackground
+    ? { backgroundImage: `url(${photoBackground})`, backgroundSize: "cover" as const, backgroundPosition: "center" as const }
+    : {};
   const slotRadius =
     isFilm   ? Math.round(14 * S) :
     isNeon   ? Math.round(4  * S) :
@@ -108,7 +114,7 @@ export function CompositeOutput({
     const pb  = Math.round(48 * S);
     return (
       <div
-        style={{ background: "#FFFDF5", padding: pad, paddingBottom: pb, borderRadius: Math.round(3 * S), boxShadow: "0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1)" }}
+        style={{ background: "#FFFDF5", ...bgStyle, padding: pad, paddingBottom: pb, borderRadius: Math.round(3 * S), boxShadow: "0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1)" }}
       >
         <div style={{ overflow: "hidden", borderRadius: Math.round(1 * S) }}>{grid}</div>
         <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginTop: Math.round(8 * S) }} />
@@ -140,7 +146,7 @@ export function CompositeOutput({
     ));
 
     return (
-      <div className="overflow-hidden rounded-sm shadow-2xl" style={{ background: "#000" }}>
+      <div className="overflow-hidden rounded-sm shadow-2xl" style={{ background: "#000", ...bgStyle }}>
         {/* Orange accent strip top */}
         <div style={{ height: Math.max(2, Math.round(3*S)), background: "rgba(210,100,0,0.55)" }} />
         <div className="flex items-stretch">
@@ -166,7 +172,7 @@ export function CompositeOutput({
     const pb  = Math.round(52 * S);
     return (
       <div
-        style={{ background: "#FAFAF8", padding: pad, paddingBottom: pb, borderRadius: Math.round(6 * S) }}
+        style={{ background: "#FAFAF8", ...bgStyle, padding: pad, paddingBottom: pb, borderRadius: Math.round(6 * S) }}
         className="shadow-2xl"
       >
         <div style={{ overflow: "hidden", borderRadius: Math.round(2 * S) }}>{grid}</div>
@@ -179,7 +185,7 @@ export function CompositeOutput({
     const inner = Math.round(4 * S);
     return (
       <div
-        style={{ background: "#F5EDD6", padding: pad, borderRadius: Math.round(2 * S) }}
+        style={{ background: "#F5EDD6", ...bgStyle, padding: pad, borderRadius: Math.round(2 * S) }}
         className="shadow-2xl"
       >
         <div style={{ border: "1px solid rgba(180,140,80,0.4)", padding: inner, overflow: "hidden" }}>
@@ -192,7 +198,7 @@ export function CompositeOutput({
   if (templateId === "minimal") {
     const pad = Math.round(12 * S);
     return (
-      <div style={{ background: "#fff", padding: pad }} className="shadow-2xl">
+      <div style={{ background: "#fff", ...bgStyle, padding: pad }} className="shadow-2xl">
         <div style={{ overflow: "hidden" }}>{grid}</div>
       </div>
     );
@@ -202,7 +208,7 @@ export function CompositeOutput({
     const pad = Math.round(12 * S);
     return (
       <div
-        style={{ background: "#111", padding: pad, borderRadius: Math.round(6 * S) }}
+        style={{ background: "#111", ...bgStyle, padding: pad, borderRadius: Math.round(6 * S) }}
         className="shadow-2xl ring-1 ring-white/5"
       >
         <div style={{ overflow: "hidden", borderRadius: Math.round(3 * S) }}>{grid}</div>
@@ -217,7 +223,7 @@ export function CompositeOutput({
     const tapeH    = Math.max(4,  Math.round(6  * S));
     const tapeBase = { position: "absolute" as const, width: tapeW, height: tapeH, background: "rgba(255,255,220,0.82)", zIndex: 2 };
     return (
-      <div style={{ background: "#C8956C", padding: outerPad, borderRadius: Math.round(4*S) }} className="shadow-2xl">
+      <div style={{ background: "#C8956C", ...bgStyle, padding: outerPad, borderRadius: Math.round(4*S) }} className="shadow-2xl">
         <div className="relative" style={{ background: "#EED9B8", padding: innerPad }}>
           {grid}
           {Array.from({ length: count }).map((_, i) => {
@@ -239,7 +245,7 @@ export function CompositeOutput({
   if (templateId === "neon") {
     const pad = Math.round(12 * S);
     return (
-      <div style={{ background: "#050508", padding: pad, borderRadius: Math.round(8*S) }} className="shadow-2xl">
+      <div style={{ background: "#050508", ...bgStyle, padding: pad, borderRadius: Math.round(8*S) }} className="shadow-2xl">
         {grid}
       </div>
     );
@@ -250,7 +256,7 @@ export function CompositeOutput({
     const hr   = Math.max(8, Math.round(10 * S));
     const heartStyle = { position: "absolute" as const, color: "#D8A0C8", fontSize: hr, lineHeight: 1, opacity: 0.75 };
     return (
-      <div className="relative shadow-2xl" style={{ background: "#F0EBFF", padding: pad, borderRadius: Math.round(16*S) }}>
+      <div className="relative shadow-2xl" style={{ background: "#F0EBFF", ...bgStyle, padding: pad, borderRadius: Math.round(16*S) }}>
         <span style={{ ...heartStyle, top: Math.round(4*S), left: Math.round(6*S) }}>♥</span>
         <span style={{ ...heartStyle, top: Math.round(4*S), right: Math.round(6*S) }}>♥</span>
         <span style={{ ...heartStyle, bottom: Math.round(4*S), left: Math.round(6*S) }}>♥</span>
@@ -266,7 +272,7 @@ export function CompositeOutput({
     const footerH = Math.round(18 * S);
     const date    = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     return (
-      <div style={{ background: "#fff", paddingLeft: pad, paddingRight: pad }} className="shadow-2xl">
+      <div style={{ background: "#fff", ...bgStyle, paddingLeft: pad, paddingRight: pad }} className="shadow-2xl">
         <div style={{ height: headerH, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #e5e5e5" }}>
           <span style={{ fontSize: Math.max(6, Math.round(7*S)), fontWeight: 700, letterSpacing: "0.14em", color: "#111", textTransform: "uppercase" as const }}>PHOTO BOOTH</span>
         </div>

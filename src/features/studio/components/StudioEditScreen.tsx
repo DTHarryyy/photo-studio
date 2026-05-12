@@ -52,6 +52,7 @@ export function StudioEditScreen({
   const clearLayers = useLayerStore((s) => s.clearLayers);
   const layerCount = useLayerStore((s) => s.layers.length);
   const photoFilter = useLayerStore((s) => s.photoFilter);
+  const photoBackground = useLayerStore((s) => s.photoBackground);
 
   function handleBack() {
     clearLayers();
@@ -125,6 +126,7 @@ export function StudioEditScreen({
               templateId={templateId}
               slotSize={slotSize}
               photoFilter={photoFilter}
+              photoBackground={photoBackground}
             />
             <LayerRenderer compositeRef={compositeRef} />
           </div>

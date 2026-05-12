@@ -13,12 +13,14 @@ interface LayerState {
   layers: UserLayer[];
   selectedId: string | null;
   photoFilter: PhotoFilter | null;
+  photoBackground: string | null;
   addSticker: (src: string, name: string) => void;
   addText: () => void;
   updateLayer: (id: string, patch: LayerPatch) => void;
   removeLayer: (id: string) => void;
   selectLayer: (id: string | null) => void;
   setPhotoFilter: (filter: PhotoFilter | null) => void;
+  setPhotoBackground: (bg: string | null) => void;
   clearLayers: () => void;
 }
 
@@ -26,6 +28,7 @@ export const useLayerStore = create<LayerState>()((set) => ({
   layers: [],
   selectedId: null,
   photoFilter: null,
+  photoBackground: null,
 
   addSticker: (src, name) =>
     set((s) => {
@@ -87,6 +90,7 @@ export const useLayerStore = create<LayerState>()((set) => ({
   selectLayer: (id) => set({ selectedId: id }),
 
   setPhotoFilter: (filter) => set({ photoFilter: filter }),
+  setPhotoBackground: (bg) => set({ photoBackground: bg }),
 
-  clearLayers: () => set({ layers: [], selectedId: null, photoFilter: null }),
+  clearLayers: () => set({ layers: [], selectedId: null, photoFilter: null, photoBackground: null }),
 }));

@@ -65,7 +65,8 @@ async function downloadComposite(
   rows: number,
   templateId: TemplateId,
   layers: UserLayer[] = [],
-  photoFilter: PhotoFilter | null = null
+  photoFilter: PhotoFilter | null = null,
+  photoBackground: string | null = null
 ) {
   // 2× resolution for crisp retina output
   const SLOT_W = 800;
@@ -103,6 +104,29 @@ async function downloadComposite(
 
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
+
+  // Background image — drawn over solid fill, under all chrome + photos
+  if (photoBackground) {
+    await new Promise<void>((resolve) => {
+      const bgImg = new window.Image();
+      bgImg.onload = () => {
+        const srcAR = bgImg.naturalWidth / bgImg.naturalHeight;
+        const dstAR = w / h;
+        let sx: number, sy: number, sw: number, sh: number;
+        if (srcAR > dstAR) {
+          sh = bgImg.naturalHeight; sw = sh * dstAR;
+          sx = (bgImg.naturalWidth - sw) / 2; sy = 0;
+        } else {
+          sw = bgImg.naturalWidth; sh = sw / dstAR;
+          sx = 0; sy = (bgImg.naturalHeight - sh) / 2;
+        }
+        ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, w, h);
+        resolve();
+      };
+      bgImg.onerror = () => resolve();
+      bgImg.src = photoBackground;
+    });
+  }
 
   // ── Template-specific chrome drawn on canvas ──────────────────────────────
 
@@ -320,10 +344,11 @@ export function StudioResultScreen({
   const [slotSize] = useState(() => computePreviewSlotSize(cols, rows));
   const layers = useLayerStore((s) => s.layers);
   const photoFilter = useLayerStore((s) => s.photoFilter);
+  const photoBackground = useLayerStore((s) => s.photoBackground);
 
   async function handleDownload() {
     setDownloading(true);
-    await downloadComposite(capturedFrames, cols, rows, templateId, layers, photoFilter);
+    await downloadComposite(capturedFrames, cols, rows, templateId, layers, photoFilter, photoBackground);
     setDownloading(false);
   }
 
@@ -395,6 +420,7 @@ export function StudioResultScreen({
             templateId={templateId}
             slotSize={slotSize}
             photoFilter={photoFilter}
+            photoBackground={photoBackground}
           />
         </motion.div>
       </div>
