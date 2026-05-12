@@ -7,13 +7,12 @@ import type { StylePack } from "./StudioPreviewCard";
 import type { LayoutId, TemplateId } from "./StudioOrchestrator";
 import type { PhotoFilter } from "@/features/photobooth/store/useLayerStore";
 
-type Tab = "style" | "template" | "layout" | "filter" | "bg";
+type Tab = "style" | "template" | "layout" | "filter";
 const TABS: { id: Tab; label: string }[] = [
   { id: "style",    label: "Style"    },
   { id: "template", label: "Template" },
   { id: "layout",   label: "Layout"   },
   { id: "filter",   label: "Filter"   },
-  { id: "bg",       label: "BG"       },
 ];
 
 // ─── Background assets ────────────────────────────────────────────────────────
@@ -178,7 +177,7 @@ function PanelContent({
   layouts, activeLayout, onLayoutChange,
   templates, activeTemplate, onTemplateChange,
   activeFilter, onFilterChange,
-  activeBackground, onBackgroundChange,
+  activeBackground, onBackgroundChange, // passed through to StyleTab
   onClose,
 }: {
   tab: Tab;
@@ -235,7 +234,10 @@ function PanelContent({
       {/* Tab body */}
       <div className="flex-1 overflow-y-auto p-4">
         {tab === "style" && (
-          <StyleTab packs={packs} activePack={activePack} onSelect={onSelect} />
+          <StyleTab
+            packs={packs} activePack={activePack} onSelect={onSelect}
+            activeBackground={activeBackground} onBackgroundChange={onBackgroundChange}
+          />
         )}
         {tab === "template" && (
           <TemplateTab templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange} />
@@ -244,7 +246,6 @@ function PanelContent({
           <LayoutTab layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange} />
         )}
         {tab === "filter" && <FilterTab activeFilter={activeFilter} onFilterChange={onFilterChange} />}
-        {tab === "bg" && <BackgroundTab activeBackground={activeBackground} onBackgroundChange={onBackgroundChange} />}
       </div>
     </div>
   );
@@ -256,47 +257,104 @@ function StyleTab({
   packs,
   activePack,
   onSelect,
+  activeBackground,
+  onBackgroundChange,
 }: {
   packs: StylePack[];
   activePack: string;
   onSelect: (id: string) => void;
+  activeBackground: string | null;
+  onBackgroundChange: (bg: string | null) => void;
 }) {
   return (
-    <div>
-      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-        Style Packs
-      </p>
-      <div className="flex flex-col gap-1">
-        {packs.map((pack) => {
-          const isActive = pack.id === activePack;
-          return (
-            <button
-              key={pack.id}
-              onClick={() => onSelect(pack.id)}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150",
-                isActive
-                  ? "bg-white/8 text-white"
-                  : "text-zinc-400 hover:bg-white/5 hover:text-white"
-              )}
-            >
-              <span
-                className="h-7 w-7 flex-shrink-0 rounded-full ring-1 ring-white/10 shadow-lg"
-                style={{
-                  background: `radial-gradient(circle at 35% 35%, ${pack.color}cc, ${pack.color})`,
-                  boxShadow: isActive ? `0 0 10px ${pack.color}60` : undefined,
-                }}
-              />
-              <span className="flex-1 text-sm font-medium">{pack.name}</span>
-              {isActive && (
+    <div className="flex flex-col gap-5">
+      {/* Style packs */}
+      <div>
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+          Style Packs
+        </p>
+        <div className="flex flex-col gap-1">
+          {packs.map((pack) => {
+            const isActive = pack.id === activePack;
+            return (
+              <button
+                key={pack.id}
+                onClick={() => onSelect(pack.id)}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150",
+                  isActive
+                    ? "bg-white/8 text-white"
+                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                )}
+              >
                 <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: pack.color }}
+                  className="h-7 w-7 flex-shrink-0 rounded-full ring-1 ring-white/10 shadow-lg"
+                  style={{
+                    background: `radial-gradient(circle at 35% 35%, ${pack.color}cc, ${pack.color})`,
+                    boxShadow: isActive ? `0 0 10px ${pack.color}60` : undefined,
+                  }}
                 />
-              )}
-            </button>
-          );
-        })}
+                <span className="flex-1 text-sm font-medium">{pack.name}</span>
+                {isActive && (
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: pack.color }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Backgrounds */}
+      <div>
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+          Backgrounds
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {/* None tile */}
+          <button
+            onClick={() => onBackgroundChange(null)}
+            className={cn(
+              "relative aspect-square overflow-hidden rounded-xl border transition-all duration-150",
+              activeBackground === null
+                ? "border-violet-500/70 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
+                : "border-white/8 hover:border-white/20"
+            )}
+          >
+            <div className="flex h-full w-full items-center justify-center bg-zinc-900">
+              <svg className="h-5 w-5 text-zinc-600" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+                <path d="M4 4l12 12M16 4L4 16" />
+              </svg>
+            </div>
+            {activeBackground === null && (
+              <div className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-violet-500" />
+            )}
+          </button>
+
+          {PHOTO_BACKGROUNDS.map((src) => {
+            const isActive = activeBackground === src;
+            return (
+              <button
+                key={src}
+                onClick={() => onBackgroundChange(src)}
+                className={cn(
+                  "relative aspect-square overflow-hidden rounded-xl border transition-all duration-150 hover:scale-[1.04] active:scale-[0.97]",
+                  isActive
+                    ? "border-violet-500/70 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
+                    : "border-white/8 hover:border-white/20"
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" className="h-full w-full object-cover" draggable={false} />
+                {isActive && (
+                  <div className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-violet-500" />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -576,65 +634,3 @@ function FilterTab({
   );
 }
 
-// ─── Background tab ───────────────────────────────────────────────────────────
-
-function BackgroundTab({
-  activeBackground,
-  onBackgroundChange,
-}: {
-  activeBackground: string | null;
-  onBackgroundChange: (bg: string | null) => void;
-}) {
-  return (
-    <div>
-      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
-        Backgrounds
-      </p>
-      <div className="grid grid-cols-3 gap-2">
-
-        {/* None tile */}
-        <button
-          onClick={() => onBackgroundChange(null)}
-          className={cn(
-            "relative aspect-square overflow-hidden rounded-xl border transition-all duration-150",
-            activeBackground === null
-              ? "border-violet-500/70 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
-              : "border-white/8 hover:border-white/20"
-          )}
-        >
-          <div className="flex h-full w-full items-center justify-center bg-zinc-900">
-            <svg className="h-5 w-5 text-zinc-600" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
-              <path d="M4 4l12 12M16 4L4 16" />
-            </svg>
-          </div>
-          {activeBackground === null && (
-            <div className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-violet-500" />
-          )}
-        </button>
-
-        {/* Image tiles — no labels, image speaks for itself */}
-        {PHOTO_BACKGROUNDS.map((src) => {
-          const isActive = activeBackground === src;
-          return (
-            <button
-              key={src}
-              onClick={() => onBackgroundChange(src)}
-              className={cn(
-                "relative aspect-square overflow-hidden rounded-xl border transition-all duration-150 hover:scale-[1.04] active:scale-[0.97]",
-                isActive
-                  ? "border-violet-500/70 shadow-[0_0_12px_rgba(139,92,246,0.35)]"
-                  : "border-white/8 hover:border-white/20"
-              )}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="h-full w-full object-cover" draggable={false} />
-              {isActive && (
-                <div className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-violet-500" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
