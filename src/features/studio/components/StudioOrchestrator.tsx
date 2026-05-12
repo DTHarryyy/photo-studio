@@ -6,11 +6,11 @@ import { useCamera } from "@/features/camera/hooks/useCamera";
 import { useCameraStore } from "@/features/camera/store/camera.store";
 import { StudioCamera } from "./StudioCamera";
 import { StudioTopBar } from "./StudioTopBar";
-import { StudioPreviewCard } from "./StudioPreviewCard";
 import { StudioCaptureBar } from "./StudioCaptureBar";
 import { StudioStylePanel } from "./StudioStylePanel";
 import { StudioResultScreen } from "./StudioResultScreen";
 import { StudioEditScreen } from "./StudioEditScreen";
+import { StudioLiveGrid } from "./StudioLiveGrid";
 import { useLayerStore } from "@/features/photobooth/store/useLayerStore";
 
 // ─── Layout config ────────────────────────────────────────────────────────────
@@ -102,19 +102,26 @@ export function StudioOrchestrator({ layout }: Props) {
   const capturedCount = capturedFrames.filter(Boolean).length;
   const isDone = capturedCount >= count;
   const stylePack = STYLE_PACKS.find((p) => p.id === activePack) ?? STYLE_PACKS[0];
-  const isLive = cameraStatus === "active";
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
 
-      {/* ── 1. Fullscreen camera background ─────────────────────────── */}
-      <StudioCamera
+      {/* ── 1. Live grid — full-screen layout with live feed + captures ──── */}
+      <StudioLiveGrid
         videoRef={videoRef}
+        cols={cols}
+        rows={rows}
+        count={count}
+        capturedFrames={capturedFrames}
+        stream={stream}
         cameraStatus={cameraStatus}
+        templateId={activeTemplate}
+        photoFilter={photoFilter}
+        onRetakeSlot={removeFrame}
         onReload={() => window.location.reload()}
       />
 
-      {/* ── 2. Floating top bar ──────────────────────────────────────── */}
+      {/* ── 2. Floating top bar ──────────────────────────────── */}
       <StudioTopBar
         capturedCount={capturedCount}
         totalCount={count}
@@ -123,25 +130,9 @@ export function StudioOrchestrator({ layout }: Props) {
         onReset={clearFrames}
       />
 
-      {/* ── 3. Floating preview card ─────────────────────────────────── */}
+      {/* ── 3. Capture controls ──────────────────────────────── */}
       <AnimatePresence>
-        {isLive && phase === "capture" && (
-          <StudioPreviewCard
-            cols={cols}
-            rows={rows}
-            count={count}
-            capturedFrames={capturedFrames}
-            stream={stream}
-            stylePack={stylePack}
-            templateId={activeTemplate}
-            onRetakeSlot={removeFrame}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* ── 4. Capture controls ──────────────────────────────────────── */}
-      <AnimatePresence>
-        {isLive && phase === "capture" && (
+        {cameraStatus === "active" && phase === "capture" && (
           <StudioCaptureBar
             isDone={isDone}
             onCapture={capture}
