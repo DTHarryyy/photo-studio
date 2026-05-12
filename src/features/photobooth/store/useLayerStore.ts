@@ -4,17 +4,20 @@ import type { UserLayer, LayerPatch } from "../types/layer";
 interface LayerState {
   layers: UserLayer[];
   selectedId: string | null;
+  photoFilter: string;
   addSticker: (src: string, name: string) => void;
   addText: () => void;
   updateLayer: (id: string, patch: LayerPatch) => void;
   removeLayer: (id: string) => void;
   selectLayer: (id: string | null) => void;
+  setPhotoFilter: (filter: string) => void;
   clearLayers: () => void;
 }
 
 export const useLayerStore = create<LayerState>()((set) => ({
   layers: [],
   selectedId: null,
+  photoFilter: "",
 
   addSticker: (src, name) =>
     set((s) => {
@@ -75,5 +78,7 @@ export const useLayerStore = create<LayerState>()((set) => ({
 
   selectLayer: (id) => set({ selectedId: id }),
 
-  clearLayers: () => set({ layers: [], selectedId: null }),
+  setPhotoFilter: (filter) => set({ photoFilter: filter }),
+
+  clearLayers: () => set({ layers: [], selectedId: null, photoFilter: "" }),
 }));

@@ -11,6 +11,8 @@ interface Props {
   templateId: TemplateId;
   /** Base slot size in px — all template chrome scales proportionally. Default 120. */
   slotSize?: number;
+  /** CSS filter string to apply to all photo slots. Overrides template defaults. */
+  photoFilter?: string;
 }
 
 export function CompositeOutput({
@@ -20,11 +22,12 @@ export function CompositeOutput({
   capturedFrames,
   templateId,
   slotSize = 120,
+  photoFilter,
 }: Props) {
   const S = slotSize / 120;
   const gap = Math.round(3 * S);
   const isFilm = templateId === "film";
-  const grayscale = isFilm ? "grayscale(1)" : undefined;
+  const imageFilter = photoFilter !== undefined ? photoFilter || undefined : (isFilm ? "grayscale(1)" : undefined);
 
   const grid = (
     <div
@@ -52,7 +55,7 @@ export function CompositeOutput({
               <img
                 src={frame.dataUrl}
                 className="h-full w-full object-cover"
-                style={{ filter: grayscale }}
+                style={{ filter: imageFilter }}
                 alt=""
               />
             ) : (

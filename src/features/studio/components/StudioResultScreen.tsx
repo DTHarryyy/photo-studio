@@ -51,7 +51,8 @@ async function downloadComposite(
   cols: number,
   rows: number,
   templateId: TemplateId,
-  layers: UserLayer[] = []
+  layers: UserLayer[] = [],
+  photoFilter: string = ""
 ) {
   const isFilm = templateId === "film";
   const isPolaroid = templateId === "polaroid";
@@ -107,15 +108,17 @@ async function downloadComposite(
           const row = Math.floor(i / cols);
           const x = RAIL + padX + col * (SLOT_W + photoGap);
           const y = padY + row * (SLOT_H + photoGap);
+          const activeFilter = photoFilter || (isFilm ? "grayscale(1)" : "");
+          ctx.save();
+          if (activeFilter) ctx.filter = activeFilter;
           if (isFilm) {
-            ctx.filter = "grayscale(1)";
-            ctx.save();
             ctx.beginPath();
             ctx.roundRect(x, y, SLOT_W, SLOT_H, 22);
             ctx.clip();
           }
           drawImageCover(ctx, img, x, y, SLOT_W, SLOT_H);
-          if (isFilm) { ctx.restore(); ctx.filter = "none"; }
+          ctx.restore();
+          if (activeFilter) ctx.filter = "none";
           resolve();
         };
         img.src = frame.dataUrl;
@@ -177,10 +180,11 @@ export function StudioResultScreen({
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const layers = useLayerStore((s) => s.layers);
+  const photoFilter = useLayerStore((s) => s.photoFilter);
 
   async function handleDownload() {
     setDownloading(true);
-    await downloadComposite(capturedFrames, cols, rows, templateId, layers);
+    await downloadComposite(capturedFrames, cols, rows, templateId, layers, photoFilter);
     setDownloading(false);
   }
 
@@ -250,6 +254,7 @@ export function StudioResultScreen({
             count={count}
             capturedFrames={capturedFrames}
             templateId={templateId}
+            photoFilter={photoFilter}
           />
         </motion.div>
       </div>
