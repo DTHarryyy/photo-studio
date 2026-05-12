@@ -37,16 +37,20 @@ export const LAYOUT_LIST: { id: LayoutId; name: string; cols: number; rows: numb
 
 // ─── Templates ────────────────────────────────────────────────────────────────
 
-export type TemplateId = "none" | "polaroid" | "film" | "instax" | "vintage" | "minimal" | "dark";
+export type TemplateId = "none" | "polaroid" | "film" | "instax" | "vintage" | "minimal" | "dark" | "scrapbook" | "neon" | "pastel" | "strip";
 
 export const STUDIO_TEMPLATES: { id: TemplateId; name: string; description: string }[] = [
-  { id: "none",     name: "None",     description: "Clean, no frame"        },
-  { id: "polaroid", name: "Polaroid", description: "Classic white border"   },
-  { id: "film",     name: "Film",     description: "35mm film strip"        },
-  { id: "instax",   name: "Instax",   description: "Fujifilm instant style" },
-  { id: "vintage",  name: "Vintage",  description: "Aged photo border"      },
-  { id: "minimal",  name: "Minimal",  description: "Clean gallery print"    },
-  { id: "dark",     name: "Dark",     description: "Moody dark frame"       },
+  { id: "none",      name: "None",      description: "Clean, no frame"        },
+  { id: "polaroid",  name: "Polaroid",  description: "Classic white border"   },
+  { id: "film",      name: "Film",      description: "35mm film strip"        },
+  { id: "instax",    name: "Instax",    description: "Fujifilm instant style" },
+  { id: "vintage",   name: "Vintage",   description: "Aged photo border"      },
+  { id: "minimal",   name: "Minimal",   description: "Clean gallery print"    },
+  { id: "dark",      name: "Dark",      description: "Moody dark frame"       },
+  { id: "scrapbook", name: "Scrapbook", description: "Kraft paper with tape"  },
+  { id: "neon",      name: "Neon",      description: "Glowing neon border"    },
+  { id: "pastel",    name: "Pastel",    description: "Soft & cute"            },
+  { id: "strip",     name: "Strip",     description: "Classic booth printout" },
 ];
 
 // ─── Style packs ──────────────────────────────────────────────────────────────

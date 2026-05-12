@@ -41,7 +41,14 @@ function computeSlotSize(cols: number, rows: number, templateId: TemplateId): nu
     return Math.max(80, Math.min(byW, byH, 340));
   }
 
-  if (templateId === "vintage" || templateId === "minimal" || templateId === "dark") {
+  if (templateId === "strip") {
+    const byW = Math.floor((availW - 24) / cols);
+    const byH = Math.floor((availH - 90) / rows);
+    return Math.max(80, Math.min(byW, byH, 340));
+  }
+
+  if (templateId === "vintage" || templateId === "minimal" || templateId === "dark" ||
+      templateId === "scrapbook" || templateId === "neon" || templateId === "pastel") {
     const byW = Math.floor((availW - 32) / cols);
     const byH = Math.floor((availH - 32) / rows);
     return Math.max(80, Math.min(byW, byH, 340));
@@ -93,12 +100,16 @@ export function StudioLiveGrid({
   }, [cols, rows, templateId]);
 
   const S = slotSize / 120;
-  const isFilm     = templateId === "film";
-  const isPolaroid = templateId === "polaroid";
-  const isInstax   = templateId === "instax";
-  const isVintage  = templateId === "vintage";
-  const isMinimal  = templateId === "minimal";
-  const isDark     = templateId === "dark";
+  const isFilm      = templateId === "film";
+  const isPolaroid  = templateId === "polaroid";
+  const isInstax    = templateId === "instax";
+  const isVintage   = templateId === "vintage";
+  const isMinimal   = templateId === "minimal";
+  const isDark      = templateId === "dark";
+  const isScrapbook = templateId === "scrapbook";
+  const isNeon      = templateId === "neon";
+  const isPastel    = templateId === "pastel";
+  const isStrip     = templateId === "strip";
 
   // ── Camera not yet active ─────────────────────────────────────────────────
   if (cameraStatus !== "active") {
@@ -187,30 +198,37 @@ export function StudioLiveGrid({
 
   if (isPolaroid) {
     const pad = Math.round(12 * S);
-    const pb  = Math.round(40 * S);
+    const pb  = Math.round(48 * S);
     content = (
-      <div
-        style={{ background: "#fff", padding: pad, paddingBottom: pb, borderRadius: Math.round(2 * S) }}
-        className="shadow-2xl"
-      >
-        <div style={{ overflow: "hidden" }}>{grid}</div>
+      <div style={{ background: "#FFFDF5", padding: pad, paddingBottom: pb, borderRadius: Math.round(3*S), boxShadow: "0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.1)" }}>
+        <div style={{ overflow: "hidden", borderRadius: Math.round(1*S) }}>{grid}</div>
+        <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginTop: Math.round(8*S) }} />
       </div>
     );
   } else if (isFilm) {
-    const RAIL_W   = Math.round(slotSize * 0.14);
-    const PAD_X    = Math.round(6 * S);
-    const FOOTER_H = Math.round(28 * S);
+    const RAIL_W    = Math.round(slotSize * 0.14);
+    const PAD_X     = Math.round(6 * S);
+    const FOOTER_H  = Math.round(28 * S);
     const holeCount = rows * 5 + 2;
+    const frameNums = Array.from({ length: cols }).map((_, c) => (
+      <div key={c} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ color: "rgba(220,110,0,0.7)", fontSize: Math.max(4, Math.round(5*S)), fontFamily: "monospace" }}>▪ {c+1}A ▪</span>
+      </div>
+    ));
     content = (
       <div className="overflow-hidden rounded-sm shadow-2xl" style={{ background: "#000" }}>
+        <div style={{ height: Math.max(2, Math.round(3*S)), background: "rgba(210,100,0,0.55)" }} />
         <div className="flex items-stretch">
           <FilmRail railW={RAIL_W} holeCount={holeCount} />
           <div style={{ padding: `${PAD_X}px`, paddingBottom: 0 }}>
             {grid}
-            <div style={{ height: FOOTER_H, background: "#000" }} />
+            <div style={{ height: FOOTER_H, background: "#000", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ display: "flex" }}>{frameNums}</div>
+            </div>
           </div>
           <FilmRail railW={RAIL_W} holeCount={holeCount} />
         </div>
+        <div style={{ height: Math.max(2, Math.round(3*S)), background: "rgba(210,100,0,0.55)" }} />
       </div>
     );
   } else if (isInstax) {
@@ -261,6 +279,66 @@ export function StudioLiveGrid({
         className="shadow-2xl ring-1 ring-white/5"
       >
         <div style={{ overflow: "hidden", borderRadius: Math.round(3 * S) }}>{grid}</div>
+      </div>
+    );
+  } else if (isScrapbook) {
+    const outerPad = Math.round(14 * S);
+    const innerPad = Math.round(6  * S);
+    const tapeW    = Math.max(10, Math.round(16 * S));
+    const tapeH    = Math.max(3,  Math.round(5  * S));
+    const tb       = { position: "absolute" as const, width: tapeW, height: tapeH, background: "rgba(255,255,220,0.82)", zIndex: 2 };
+    content = (
+      <div style={{ background: "#C8956C", padding: outerPad, borderRadius: Math.round(4*S) }} className="shadow-2xl">
+        <div className="relative" style={{ background: "#EED9B8", padding: innerPad }}>
+          {grid}
+          {Array.from({ length: count }).map((_, i) => {
+            const col = i % cols, row = Math.floor(i / cols);
+            const sx = innerPad + col * (slotSize + SLOT_GAP);
+            const sy = innerPad + row * (slotSize + SLOT_GAP);
+            return [
+              <div key={`tl${i}`} style={{ ...tb, left: sx + slotSize*0.08, top: sy - tapeH/2, transform: "rotate(-7deg)" }} />,
+              <div key={`tr${i}`} style={{ ...tb, left: sx + slotSize*0.72, top: sy - tapeH/2, transform: "rotate(7deg)" }} />,
+              <div key={`bl${i}`} style={{ ...tb, left: sx + slotSize*0.08, top: sy + slotSize - tapeH/2, transform: "rotate(7deg)" }} />,
+              <div key={`br${i}`} style={{ ...tb, left: sx + slotSize*0.72, top: sy + slotSize - tapeH/2, transform: "rotate(-7deg)" }} />,
+            ];
+          })}
+        </div>
+      </div>
+    );
+  } else if (isNeon) {
+    const pad = Math.round(12 * S);
+    content = (
+      <div style={{ background: "#050508", padding: pad, borderRadius: Math.round(8*S) }} className="shadow-2xl">
+        {grid}
+      </div>
+    );
+  } else if (isPastel) {
+    const pad  = Math.round(14 * S);
+    const hr   = Math.max(8, Math.round(10 * S));
+    const hs   = { position: "absolute" as const, color: "#D8A0C8", fontSize: hr, lineHeight: 1, opacity: 0.75 };
+    content = (
+      <div className="relative shadow-2xl" style={{ background: "#F0EBFF", padding: pad, borderRadius: Math.round(16*S) }}>
+        <span style={{ ...hs, top: Math.round(4*S), left: Math.round(6*S) }}>♥</span>
+        <span style={{ ...hs, top: Math.round(4*S), right: Math.round(6*S) }}>♥</span>
+        <span style={{ ...hs, bottom: Math.round(4*S), left: Math.round(6*S) }}>♥</span>
+        <span style={{ ...hs, bottom: Math.round(4*S), right: Math.round(6*S) }}>♥</span>
+        <div style={{ overflow: "hidden", borderRadius: Math.round(8*S) }}>{grid}</div>
+      </div>
+    );
+  } else if (isStrip) {
+    const pad     = Math.round(10 * S);
+    const headerH = Math.round(22 * S);
+    const footerH = Math.round(18 * S);
+    const date    = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    content = (
+      <div style={{ background: "#fff", paddingLeft: pad, paddingRight: pad }} className="shadow-2xl">
+        <div style={{ height: headerH, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid #e5e5e5" }}>
+          <span style={{ fontSize: Math.max(6, Math.round(7*S)), fontWeight: 700, letterSpacing: "0.14em", color: "#111", textTransform: "uppercase" as const }}>PHOTO BOOTH</span>
+        </div>
+        <div style={{ padding: `${pad}px 0` }}>{grid}</div>
+        <div style={{ height: footerH, display: "flex", alignItems: "center", justifyContent: "center", borderTop: "1px solid #e5e5e5" }}>
+          <span style={{ fontSize: Math.max(5, Math.round(6*S)), color: "#aaa", letterSpacing: "0.08em" }}>{date}</span>
+        </div>
       </div>
     );
   } else {
@@ -335,12 +413,15 @@ function LiveSlot({
 }) {
   const slotVideoRef = useRef<HTMLVideoElement | null>(null);
   const { facingMode } = useCameraStore();
-  const mirror = facingMode === "user";
-  const isFilm = templateId === "film";
+  const mirror  = facingMode === "user";
+  const isFilm  = templateId === "film";
+  const isNeonT = templateId === "neon";
 
-  // If no custom filter is chosen, use the template default
-  const filterCss = photoFilter?.css || (isFilm ? "grayscale(1)" : undefined);
-  const borderRadius = isFilm ? Math.round(slotSize * 0.1) : 0;
+  const filterCss  = photoFilter?.css || (isFilm ? "grayscale(1)" : undefined);
+  const slotRadius = isFilm  ? Math.round(slotSize * 0.1)
+    : isNeonT || templateId === "dark"   ? Math.round(slotSize * 0.033)
+    : templateId === "pastel" || templateId === "instax" ? Math.round(slotSize * 0.017)
+    : 0;
 
   useEffect(() => {
     const el = slotVideoRef.current;
@@ -353,67 +434,45 @@ function LiveSlot({
 
   return (
     <div
-      className="relative overflow-hidden"
-      style={{ width: slotSize, height: slotSize, borderRadius }}
+      className="relative"
+      style={{
+        width: slotSize,
+        height: slotSize,
+        ...(isNeonT ? {
+          borderRadius: slotRadius,
+          boxShadow: `0 0 ${Math.round(slotSize*0.08)}px rgba(168,85,247,0.7), 0 0 ${Math.round(slotSize*0.2)}px rgba(168,85,247,0.25)`,
+        } : {}),
+      }}
     >
-      {frame ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={frame.dataUrl}
-          className="h-full w-full object-cover"
-          style={{ filter: filterCss || undefined }}
-          alt=""
-        />
-      ) : stream ? (
-        <video
-          ref={slotVideoRef}
-          autoPlay
-          muted
-          playsInline
-          className="h-full w-full object-cover"
-          style={{
-            transform: mirror ? "scaleX(-1)" : "none",
-            filter: filterCss || undefined,
-          }}
-        />
-      ) : (
-        <div className="h-full w-full bg-zinc-900" />
+      {/* Clipped content */}
+      <div style={{ position: "absolute", inset: 0, overflow: "hidden", borderRadius: slotRadius }}>
+        {frame ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={frame.dataUrl} className="h-full w-full object-cover" style={{ filter: filterCss || undefined }} alt="" />
+        ) : stream ? (
+          <video ref={slotVideoRef} autoPlay muted playsInline className="h-full w-full object-cover" style={{ transform: mirror ? "scaleX(-1)" : "none", filter: filterCss || undefined }} />
+        ) : (
+          <div className="h-full w-full bg-zinc-900" />
+        )}
+        {photoFilter?.vignette && (
+          <div className="pointer-events-none absolute inset-0" style={{ background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${photoFilter.vignette}) 100%)` }} />
+        )}
+        {photoFilter?.grain && (
+          <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: GRAIN_BG, backgroundRepeat: "repeat", backgroundSize: "150px 150px", mixBlendMode: "overlay", opacity: 0.25 }} />
+        )}
+        {!frame && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-semibold text-white/40 backdrop-blur-sm">{index + 1}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Neon border ring — outside clip */}
+      {isNeonT && (
+        <div className="pointer-events-none absolute inset-0" style={{ borderRadius: slotRadius, border: "1px solid rgba(168,85,247,0.85)" }} />
       )}
 
-      {/* Vignette overlay */}
-      {photoFilter?.vignette && (
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${photoFilter.vignette}) 100%)`,
-          }}
-        />
-      )}
-
-      {/* Grain overlay */}
-      {photoFilter?.grain && (
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: GRAIN_BG,
-            backgroundRepeat: "repeat",
-            backgroundSize: "150px 150px",
-            mixBlendMode: "overlay",
-            opacity: 0.25,
-          }}
-        />
-      )}
-
-      {/* Slot number — only on empty slots */}
-      {!frame && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-semibold text-white/40 backdrop-blur-sm">
-            {index + 1}
-          </span>
-        </div>
-      )}
-
-      {/* Retake button — only on captured slots */}
+      {/* Retake button — outside clip so it's always tappable */}
       <AnimatePresence>
         {frame && (
           <motion.button

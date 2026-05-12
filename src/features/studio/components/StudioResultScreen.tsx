@@ -61,13 +61,17 @@ async function downloadComposite(
 
   type CanvasParams = { bg: string; padX: number; padY: number; bottomPad: number; photoGap: number; rail: number };
   const PARAMS: Record<TemplateId, CanvasParams> = {
-    none:     { bg: "#000",     padX: 0,   padY: 0,   bottomPad: 0,   photoGap: GAP, rail: 0  },
-    polaroid: { bg: "#fff",     padX: 24,  padY: 24,  bottomPad: 100, photoGap: GAP, rail: 0  },
-    film:     { bg: "#000",     padX: 52,  padY: 52,  bottomPad: 240, photoGap: 52,  rail: 56 },
-    instax:   { bg: "#FAFAF8",  padX: 40,  padY: 40,  bottomPad: 180, photoGap: GAP, rail: 0  },
-    vintage:  { bg: "#F5EDD6",  padX: 56,  padY: 56,  bottomPad: 56,  photoGap: GAP, rail: 0  },
-    minimal:  { bg: "#fff",     padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
-    dark:     { bg: "#111111",  padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
+    none:      { bg: "#000000", padX: 0,   padY: 0,   bottomPad: 0,   photoGap: GAP, rail: 0  },
+    polaroid:  { bg: "#FFFDF5", padX: 28,  padY: 28,  bottomPad: 120, photoGap: GAP, rail: 0  },
+    film:      { bg: "#000000", padX: 52,  padY: 52,  bottomPad: 240, photoGap: 52,  rail: 56 },
+    instax:    { bg: "#FAFAF8", padX: 40,  padY: 40,  bottomPad: 180, photoGap: GAP, rail: 0  },
+    vintage:   { bg: "#F5EDD6", padX: 56,  padY: 56,  bottomPad: 56,  photoGap: GAP, rail: 0  },
+    minimal:   { bg: "#ffffff", padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
+    dark:      { bg: "#111111", padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
+    scrapbook: { bg: "#C8956C", padX: 60,  padY: 60,  bottomPad: 60,  photoGap: GAP, rail: 0  },
+    neon:      { bg: "#050508", padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
+    pastel:    { bg: "#F0EBFF", padX: 44,  padY: 44,  bottomPad: 44,  photoGap: GAP, rail: 0  },
+    strip:     { bg: "#ffffff", padX: 40,  padY: 88,  bottomPad: 72,  photoGap: GAP, rail: 0  },
   };
 
   const { bg, padX, padY, bottomPad, photoGap, rail } = PARAMS[templateId] ?? PARAMS.none;
@@ -86,11 +90,54 @@ async function downloadComposite(
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
-  // Vintage inner border
+  // ── Template-specific chrome drawn on canvas ──────────────────────────────
+
+  if (templateId === "polaroid") {
+    // Warm divider line between photo and label area
+    ctx.strokeStyle = "rgba(0,0,0,0.07)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padX, padY + photoH + 16);
+    ctx.lineTo(w - padX, padY + photoH + 16);
+    ctx.stroke();
+  }
+
   if (templateId === "vintage") {
     ctx.strokeStyle = "rgba(180,140,80,0.4)";
     ctx.lineWidth = 3;
     ctx.strokeRect(padX - 12, padY - 12, photoW + 24, photoH + 24);
+  }
+
+  if (templateId === "film") {
+    // Orange accent strips at very top and bottom edges
+    ctx.fillStyle = "rgba(210,100,0,0.55)";
+    ctx.fillRect(rail, 0, photoW + padX * 2, 6);
+    ctx.fillRect(rail, h - 6, photoW + padX * 2, 6);
+  }
+
+  if (templateId === "scrapbook") {
+    // Cream inner area
+    const innerPad = 20;
+    ctx.fillStyle = "#EED9B8";
+    ctx.fillRect(padX - innerPad, padY - innerPad, photoW + innerPad * 2, photoH + innerPad * 2);
+  }
+
+  if (templateId === "strip") {
+    // Header "PHOTO BOOTH" text
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#111111";
+    ctx.font = `bold ${Math.round(w * 0.022)}px Arial, sans-serif`;
+    ctx.fillText("PHOTO BOOTH", w / 2, padY / 2);
+    // Divider lines
+    ctx.strokeStyle = "#e5e5e5";
+    ctx.lineWidth = Math.max(2, Math.round(w * 0.002));
+    ctx.beginPath(); ctx.moveTo(padX, padY - 16); ctx.lineTo(w - padX, padY - 16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padX, h - bottomPad + 16); ctx.lineTo(w - padX, h - bottomPad + 16); ctx.stroke();
+    // Footer date
+    ctx.font = `${Math.round(w * 0.016)}px Arial, sans-serif`;
+    ctx.fillStyle = "#aaaaaa";
+    ctx.fillText(new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), w / 2, h - bottomPad / 2);
   }
 
   if (isFilm) {
@@ -165,6 +212,52 @@ async function downloadComposite(
       })
     )
   );
+
+  // ── Post-photo template overlays ─────────────────────────────────────────────
+
+  if (templateId === "film") {
+    // Frame numbers and KODAK text in footer
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const footerY = padY + photoH + (bottomPad * 0.45);
+    for (let c = 0; c < cols; c++) {
+      const fx = rail + padX + c * (SLOT_W + photoGap) + SLOT_W / 2;
+      ctx.font = `bold ${Math.round(SLOT_W * 0.055)}px monospace`;
+      ctx.fillStyle = "rgba(220,110,0,0.7)";
+      ctx.fillText(`▪ ${c + 1}A ▪`, fx, footerY);
+    }
+    ctx.font = `${Math.round(w * 0.012)}px monospace`;
+    ctx.fillStyle = "rgba(200,100,0,0.45)";
+    ctx.fillText("KODAK 400 ■ ■ ■", w / 2, padY + photoH + bottomPad * 0.78);
+  }
+
+  if (templateId === "scrapbook") {
+    // Tape corners for each slot
+    const innerPad = 20;
+    const tapeW = Math.round(SLOT_W * 0.15);
+    const tapeH = 18;
+    for (let i = 0; i < cols * rows; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const sx = rail + padX + col * (SLOT_W + photoGap);
+      const sy = padY + row * (SLOT_H + photoGap);
+      const corners = [
+        { cx: sx + SLOT_W * 0.1,  cy: sy,           angle: -7 },
+        { cx: sx + SLOT_W * 0.75, cy: sy,           angle:  7 },
+        { cx: sx + SLOT_W * 0.1,  cy: sy + SLOT_H,  angle:  7 },
+        { cx: sx + SLOT_W * 0.75, cy: sy + SLOT_H,  angle: -7 },
+      ];
+      corners.forEach(({ cx, cy, angle }) => {
+        ctx.save();
+        ctx.translate(cx + tapeW / 2, cy);
+        ctx.rotate((angle * Math.PI) / 180);
+        ctx.fillStyle = "rgba(255,255,220,0.82)";
+        ctx.fillRect(-tapeW / 2, -tapeH / 2, tapeW, tapeH);
+        ctx.restore();
+      });
+    }
+    void innerPad;
+  }
 
   // Draw user layers (stickers + text) scaled by % coords
   const sorted = [...layers].sort((a, b) => a.zIndex - b.zIndex);

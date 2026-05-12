@@ -272,13 +272,17 @@ function StyleTab({
 // ─── Template tab ─────────────────────────────────────────────────────────────
 
 const TEMPLATE_VISUALS: Record<TemplateId, { bg: string; border: string; extra?: string }> = {
-  none:     { bg: "bg-zinc-800",      border: "border-white/10" },
-  polaroid: { bg: "bg-white",         border: "border-white/20",        extra: "pb-5" },
-  film:     { bg: "bg-black",         border: "border-zinc-800" },
-  instax:   { bg: "bg-[#FAFAF8]",     border: "border-white/30",        extra: "pb-8" },
-  vintage:  { bg: "bg-[#F5EDD6]",     border: "border-[#B48C50]/50" },
-  minimal:  { bg: "bg-white",         border: "border-gray-300/60" },
-  dark:     { bg: "bg-[#111]",        border: "border-zinc-700/60" },
+  none:      { bg: "bg-zinc-800",    border: "border-white/10" },
+  polaroid:  { bg: "bg-[#FFFDF5]",  border: "border-white/20",       extra: "pb-5" },
+  film:      { bg: "bg-black",       border: "border-zinc-800" },
+  instax:    { bg: "bg-[#FAFAF8]",  border: "border-white/30",       extra: "pb-8" },
+  vintage:   { bg: "bg-[#F5EDD6]",  border: "border-[#B48C50]/50" },
+  minimal:   { bg: "bg-white",       border: "border-gray-300/60" },
+  dark:      { bg: "bg-[#111]",      border: "border-zinc-700/60" },
+  scrapbook: { bg: "bg-[#EED9B8]",  border: "border-[#C8956C]/60" },
+  neon:      { bg: "bg-[#050508]",  border: "border-violet-500/50" },
+  pastel:    { bg: "bg-[#F0EBFF]",  border: "border-violet-300/40" },
+  strip:     { bg: "bg-white",       border: "border-gray-200" },
 };
 
 function TemplateTab({
@@ -349,10 +353,14 @@ function TemplateTab({
                               key={i}
                               className={cn(
                                 "rounded-[1px]",
-                                tpl.id === "polaroid" || tpl.id === "instax" || tpl.id === "minimal"
+                                ["polaroid","instax","minimal","strip"].includes(tpl.id)
                                   ? "bg-zinc-200"
-                                  : tpl.id === "vintage"
+                                  : tpl.id === "vintage" || tpl.id === "scrapbook"
                                   ? "bg-[#C8A86B]/40"
+                                  : tpl.id === "pastel"
+                                  ? "bg-violet-200/60"
+                                  : tpl.id === "neon"
+                                  ? "bg-violet-500/30"
                                   : "bg-white/15"
                               )}
                             />
