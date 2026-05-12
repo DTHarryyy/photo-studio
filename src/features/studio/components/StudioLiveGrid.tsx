@@ -5,7 +5,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
 import type { CameraStatus } from "@/features/camera/store/camera.store";
 import type { TemplateId } from "./StudioOrchestrator";
+import type { PhotoFilter } from "@/features/photobooth/store/useLayerStore";
 import { useCameraStore } from "@/features/camera/store/camera.store";
+
+const GRAIN_BG = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
 // Chrome heights to clear the top bar and capture bar
 const TOP_CLEAR = 64;
@@ -50,7 +53,7 @@ interface Props {
   stream: MediaStream | null;
   cameraStatus: CameraStatus;
   templateId: TemplateId;
-  photoFilter: string;
+  photoFilter: PhotoFilter | null;
   onRetakeSlot: (i: number) => void;
   onReload: () => void;
 }
@@ -259,7 +262,7 @@ function LiveSlot({
   index: number;
   stream: MediaStream | null;
   frame: CapturedFrame | null;
-  photoFilter: string;
+  photoFilter: PhotoFilter | null;
   templateId: TemplateId;
   slotSize: number;
   onRetake: () => void;
@@ -270,7 +273,7 @@ function LiveSlot({
   const isFilm = templateId === "film";
 
   // If no custom filter is chosen, use the template default
-  const filterCss = photoFilter || (isFilm ? "grayscale(1)" : undefined);
+  const filterCss = photoFilter?.css || (isFilm ? "grayscale(1)" : undefined);
   const borderRadius = isFilm ? Math.round(slotSize * 0.1) : 0;
 
   useEffect(() => {
@@ -309,6 +312,30 @@ function LiveSlot({
         />
       ) : (
         <div className="h-full w-full bg-zinc-900" />
+      )}
+
+      {/* Vignette overlay */}
+      {photoFilter?.vignette && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${photoFilter.vignette}) 100%)`,
+          }}
+        />
+      )}
+
+      {/* Grain overlay */}
+      {photoFilter?.grain && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: GRAIN_BG,
+            backgroundRepeat: "repeat",
+            backgroundSize: "150px 150px",
+            mixBlendMode: "overlay",
+            opacity: 0.25,
+          }}
+        />
       )}
 
       {/* Slot number — only on empty slots */}

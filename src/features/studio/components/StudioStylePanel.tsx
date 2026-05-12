@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { StylePack } from "./StudioPreviewCard";
 import type { LayoutId, TemplateId } from "./StudioOrchestrator";
+import type { PhotoFilter } from "@/features/photobooth/store/useLayerStore";
+
 type Tab = "style" | "template" | "layout" | "filter";
 const TABS: { id: Tab; label: string }[] = [
   { id: "style",    label: "Style"    },
@@ -15,31 +17,34 @@ const TABS: { id: Tab; label: string }[] = [
 
 const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
 
+// SVG fractal-noise tile used as a grain overlay (URL-encoded for CSS backgroundImage)
+const GRAIN_BG = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
 // ─── Filter definitions ───────────────────────────────────────────────────────
 
-const PHOTO_FILTERS: { id: string; name: string; css: string }[] = [
-  { id: "none",       name: "OG",         css: "" },
-  { id: "cute",       name: "Cute",       css: "brightness(1.12) contrast(0.88) saturate(1.4) hue-rotate(340deg)" },
-  { id: "clarendon",  name: "Clarendon",  css: "brightness(1.08) contrast(1.25) saturate(1.35)" },
-  { id: "lark",       name: "Lark",       css: "brightness(1.1) contrast(0.9) saturate(1.1) sepia(0.1)" },
-  { id: "juno",       name: "Juno",       css: "sepia(0.15) saturate(1.5) contrast(1.05) brightness(1.05)" },
-  { id: "reyes",      name: "Reyes",      css: "sepia(0.3) brightness(1.1) contrast(0.85) saturate(0.75)" },
-  { id: "crema",      name: "Crema",      css: "sepia(0.5) brightness(1.08) contrast(0.85) saturate(0.85)" },
-  { id: "valencia",   name: "Valencia",   css: "sepia(0.2) brightness(1.1) contrast(1.1) saturate(1.2)" },
-  { id: "aden",       name: "Aden",       css: "hue-rotate(340deg) saturate(0.85) brightness(1.1) contrast(0.9)" },
-  { id: "slumber",    name: "Slumber",    css: "saturate(0.65) brightness(1.08) hue-rotate(5deg)" },
-  { id: "moon",       name: "Moon",       css: "grayscale(1) brightness(1.1) contrast(1.05)" },
-  { id: "noir",       name: "Noir",       css: "grayscale(1) contrast(1.3) brightness(0.88)" },
-  { id: "inkwell",    name: "Inkwell",    css: "grayscale(1) sepia(0.4) contrast(1.1) brightness(0.95)" },
-  { id: "charcoal",   name: "Charcoal",   css: "grayscale(1) contrast(1.6) brightness(0.8)" },
-  { id: "silver",     name: "Silver",     css: "grayscale(0.9) brightness(1.15) contrast(0.9)" },
-  { id: "amber",      name: "Amber",      css: "sepia(0.9) contrast(1.05)" },
-  { id: "golden",     name: "Golden",     css: "sepia(0.35) saturate(1.3) brightness(1.05)" },
-  { id: "rust",       name: "Rust",       css: "sepia(0.6) saturate(1.2) hue-rotate(340deg) contrast(1.1)" },
-  { id: "haze",       name: "Haze",       css: "brightness(1.15) contrast(0.8) saturate(0.75)" },
-  { id: "ink",        name: "Ink",        css: "contrast(1.45) brightness(0.85) saturate(0.7)" },
-  { id: "frost",      name: "Frost",      css: "hue-rotate(190deg) saturate(0.85) brightness(1.05)" },
-  { id: "pop",        name: "Pop",        css: "saturate(1.5) contrast(1.05)" },
+const PHOTO_FILTERS: PhotoFilter[] = [
+  { id: "none",      name: "OG",        css: "" },
+  { id: "cute",      name: "Cute",      css: "brightness(1.12) contrast(0.88) saturate(1.4) hue-rotate(340deg)" },
+  { id: "clarendon", name: "Clarendon", css: "brightness(1.08) contrast(1.25) saturate(1.35)" },
+  { id: "lark",      name: "Lark",      css: "brightness(1.1) contrast(0.9) saturate(1.1) sepia(0.1)" },
+  { id: "juno",      name: "Juno",      css: "sepia(0.15) saturate(1.5) contrast(1.05) brightness(1.05)" },
+  { id: "reyes",     name: "Reyes",     css: "sepia(0.3) brightness(1.1) contrast(0.85) saturate(0.75)", vignette: 0.25 },
+  { id: "crema",     name: "Crema",     css: "sepia(0.5) brightness(1.08) contrast(0.85) saturate(0.85)", vignette: 0.2, grain: true },
+  { id: "valencia",  name: "Valencia",  css: "sepia(0.2) brightness(1.1) contrast(1.1) saturate(1.2)", vignette: 0.2 },
+  { id: "aden",      name: "Aden",      css: "hue-rotate(340deg) saturate(0.85) brightness(1.1) contrast(0.9)", vignette: 0.3 },
+  { id: "slumber",   name: "Slumber",   css: "saturate(0.65) brightness(1.08) hue-rotate(5deg)", grain: true },
+  { id: "moon",      name: "Moon",      css: "grayscale(1) brightness(1.1) contrast(1.05)", vignette: 0.35 },
+  { id: "noir",      name: "Noir",      css: "grayscale(1) contrast(1.3) brightness(0.88)", vignette: 0.5 },
+  { id: "inkwell",   name: "Inkwell",   css: "grayscale(1) sepia(0.4) contrast(1.1) brightness(0.95)", vignette: 0.3, grain: true },
+  { id: "charcoal",  name: "Charcoal",  css: "grayscale(1) contrast(1.6) brightness(0.8)", vignette: 0.5, grain: true },
+  { id: "silver",    name: "Silver",    css: "grayscale(0.9) brightness(1.15) contrast(0.9)", vignette: 0.2 },
+  { id: "amber",     name: "Amber",     css: "sepia(0.9) contrast(1.05)", vignette: 0.3, grain: true },
+  { id: "golden",    name: "Golden",    css: "sepia(0.35) saturate(1.3) brightness(1.05)" },
+  { id: "rust",      name: "Rust",      css: "sepia(0.6) saturate(1.2) hue-rotate(340deg) contrast(1.1)", vignette: 0.3, grain: true },
+  { id: "haze",      name: "Haze",      css: "brightness(1.15) contrast(0.8) saturate(0.75)" },
+  { id: "ink",       name: "Ink",       css: "contrast(1.45) brightness(0.85) saturate(0.7)", vignette: 0.4 },
+  { id: "frost",     name: "Frost",     css: "hue-rotate(190deg) saturate(0.85) brightness(1.05)" },
+  { id: "pop",       name: "Pop",       css: "saturate(1.5) contrast(1.05)" },
 ];
 
 interface LayoutOption {
@@ -66,8 +71,8 @@ interface Props {
   templates: TemplateOption[];
   activeTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
-  activeFilter: string;
-  onFilterChange: (css: string) => void;
+  activeFilter: PhotoFilter | null;
+  onFilterChange: (filter: PhotoFilter | null) => void;
   onClose: () => void;
 }
 
@@ -157,8 +162,8 @@ function PanelContent({
   templates: TemplateOption[];
   activeTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
-  activeFilter: string;
-  onFilterChange: (css: string) => void;
+  activeFilter: PhotoFilter | null;
+  onFilterChange: (filter: PhotoFilter | null) => void;
   onClose: () => void;
 }) {
   return (
@@ -454,8 +459,8 @@ function FilterTab({
   activeFilter,
   onFilterChange,
 }: {
-  activeFilter: string;
-  onFilterChange: (css: string) => void;
+  activeFilter: PhotoFilter | null;
+  onFilterChange: (filter: PhotoFilter | null) => void;
 }) {
   return (
     <div>
@@ -464,11 +469,11 @@ function FilterTab({
       </p>
       <div className="grid grid-cols-3 gap-2">
         {PHOTO_FILTERS.map((f) => {
-          const isActive = activeFilter === f.css;
+          const isActive = f.id === "none" ? activeFilter === null : activeFilter?.id === f.id;
           return (
             <button
               key={f.id}
-              onClick={() => onFilterChange(f.css)}
+              onClick={() => onFilterChange(f.id === "none" ? null : f)}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-xl border p-2 transition-all",
                 isActive
@@ -476,14 +481,36 @@ function FilterTab({
                   : "border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
               )}
             >
-              <div
-                className="h-12 w-full overflow-hidden rounded-lg"
-                style={{
-                  filter: f.css || undefined,
-                  background:
-                    "linear-gradient(135deg, #f472b6 0%, #818cf8 50%, #34d399 100%)",
-                }}
-              />
+              {/* Filter preview with vignette + grain overlays */}
+              <div className="relative h-12 w-full overflow-hidden rounded-lg">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: "linear-gradient(135deg, #f472b6 0%, #818cf8 50%, #34d399 100%)",
+                    filter: f.css || undefined,
+                  }}
+                />
+                {f.vignette && (
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${f.vignette}) 100%)`,
+                    }}
+                  />
+                )}
+                {f.grain && (
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      backgroundImage: GRAIN_BG,
+                      backgroundRepeat: "repeat",
+                      backgroundSize: "100px 100px",
+                      mixBlendMode: "overlay",
+                      opacity: 0.3,
+                    }}
+                  />
+                )}
+              </div>
               <span
                 className={cn(
                   "text-[10px] font-semibold",

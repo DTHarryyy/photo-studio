@@ -2,6 +2,9 @@
 
 import type { CapturedFrame } from "@/features/camera/types/camera.types";
 import type { TemplateId } from "./StudioOrchestrator";
+import type { PhotoFilter } from "@/features/photobooth/store/useLayerStore";
+
+const GRAIN_BG = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
 interface Props {
   cols: number;
@@ -11,8 +14,8 @@ interface Props {
   templateId: TemplateId;
   /** Base slot size in px — all template chrome scales proportionally. Default 120. */
   slotSize?: number;
-  /** CSS filter string to apply to all photo slots. Overrides template defaults. */
-  photoFilter?: string;
+  /** Filter to apply to all photo slots. Overrides template defaults. */
+  photoFilter?: PhotoFilter | null;
 }
 
 export function CompositeOutput({
@@ -27,7 +30,9 @@ export function CompositeOutput({
   const S = slotSize / 120;
   const gap = Math.round(3 * S);
   const isFilm = templateId === "film";
-  const imageFilter = photoFilter !== undefined ? photoFilter || undefined : (isFilm ? "grayscale(1)" : undefined);
+  const imageFilter = photoFilter !== undefined
+    ? (photoFilter?.css || undefined)
+    : (isFilm ? "grayscale(1)" : undefined);
 
   const grid = (
     <div
@@ -43,6 +48,7 @@ export function CompositeOutput({
         return (
           <div
             key={i}
+            className="relative"
             style={{
               width: slotSize,
               height: slotSize,
@@ -60,6 +66,28 @@ export function CompositeOutput({
               />
             ) : (
               <div className="h-full w-full bg-white/10" />
+            )}
+            {/* Vignette overlay */}
+            {photoFilter?.vignette && (
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background: `radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${photoFilter.vignette}) 100%)`,
+                }}
+              />
+            )}
+            {/* Grain overlay */}
+            {photoFilter?.grain && (
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage: GRAIN_BG,
+                  backgroundRepeat: "repeat",
+                  backgroundSize: "150px 150px",
+                  mixBlendMode: "overlay",
+                  opacity: 0.25,
+                }}
+              />
             )}
           </div>
         );

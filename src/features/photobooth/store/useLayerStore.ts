@@ -1,23 +1,31 @@
 import { create } from "zustand";
 import type { UserLayer, LayerPatch } from "../types/layer";
 
+export interface PhotoFilter {
+  id: string;
+  name: string;
+  css: string;
+  vignette?: number; // 0–1 dark-edge opacity
+  grain?: boolean;
+}
+
 interface LayerState {
   layers: UserLayer[];
   selectedId: string | null;
-  photoFilter: string;
+  photoFilter: PhotoFilter | null;
   addSticker: (src: string, name: string) => void;
   addText: () => void;
   updateLayer: (id: string, patch: LayerPatch) => void;
   removeLayer: (id: string) => void;
   selectLayer: (id: string | null) => void;
-  setPhotoFilter: (filter: string) => void;
+  setPhotoFilter: (filter: PhotoFilter | null) => void;
   clearLayers: () => void;
 }
 
 export const useLayerStore = create<LayerState>()((set) => ({
   layers: [],
   selectedId: null,
-  photoFilter: "",
+  photoFilter: null,
 
   addSticker: (src, name) =>
     set((s) => {
@@ -80,5 +88,5 @@ export const useLayerStore = create<LayerState>()((set) => ({
 
   setPhotoFilter: (filter) => set({ photoFilter: filter }),
 
-  clearLayers: () => set({ layers: [], selectedId: null, photoFilter: "" }),
+  clearLayers: () => set({ layers: [], selectedId: null, photoFilter: null }),
 }));

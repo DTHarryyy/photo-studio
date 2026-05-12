@@ -8,6 +8,7 @@ import type { TemplateId } from "./StudioOrchestrator";
 import type { StylePack } from "./StudioPreviewCard";
 import { CompositeOutput } from "./CompositeOutput";
 import { useLayerStore } from "@/features/photobooth/store/useLayerStore";
+import type { PhotoFilter } from "@/features/photobooth/store/useLayerStore";
 import type { UserLayer } from "@/features/photobooth/types/layer";
 
 interface Props {
@@ -52,7 +53,7 @@ async function downloadComposite(
   rows: number,
   templateId: TemplateId,
   layers: UserLayer[] = [],
-  photoFilter: string = ""
+  photoFilter: PhotoFilter | null = null
 ) {
   const isFilm = templateId === "film";
   const isPolaroid = templateId === "polaroid";
@@ -108,17 +109,43 @@ async function downloadComposite(
           const row = Math.floor(i / cols);
           const x = RAIL + padX + col * (SLOT_W + photoGap);
           const y = padY + row * (SLOT_H + photoGap);
-          const activeFilter = photoFilter || (isFilm ? "grayscale(1)" : "");
+          const cssFilter = photoFilter?.css || (isFilm ? "grayscale(1)" : "");
           ctx.save();
-          if (activeFilter) ctx.filter = activeFilter;
+          if (cssFilter) ctx.filter = cssFilter;
           if (isFilm) {
             ctx.beginPath();
             ctx.roundRect(x, y, SLOT_W, SLOT_H, 22);
             ctx.clip();
           }
           drawImageCover(ctx, img, x, y, SLOT_W, SLOT_H);
+          ctx.filter = "none";
+
+          // Vignette gradient overlay
+          if (photoFilter?.vignette) {
+            const cx = x + SLOT_W / 2;
+            const cy = y + SLOT_H / 2;
+            const r = Math.max(SLOT_W, SLOT_H) * 0.7;
+            const grad = ctx.createRadialGradient(cx, cy, r * 0.4, cx, cy, r);
+            grad.addColorStop(0, "rgba(0,0,0,0)");
+            grad.addColorStop(1, `rgba(0,0,0,${photoFilter.vignette})`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, SLOT_W, SLOT_H);
+          }
+
           ctx.restore();
-          if (activeFilter) ctx.filter = "none";
+
+          // Grain (pixel noise, applied outside clip boundary — acceptable for film corners)
+          if (photoFilter?.grain) {
+            const imageData = ctx.getImageData(x, y, SLOT_W, SLOT_H);
+            const d = imageData.data;
+            for (let j = 0; j < d.length; j += 4) {
+              const n = (Math.random() - 0.5) * 22;
+              d[j]     = Math.min(255, Math.max(0, d[j]     + n));
+              d[j + 1] = Math.min(255, Math.max(0, d[j + 1] + n));
+              d[j + 2] = Math.min(255, Math.max(0, d[j + 2] + n));
+            }
+            ctx.putImageData(imageData, x, y);
+          }
           resolve();
         };
         img.src = frame.dataUrl;
