@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Photo Studio",
-  description: "Creative AI Photo Studio",
+  title: "Chroniva Photo Booth",
+  description: "Capture cinematic photo moments instantly",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Chroniva",
+  },
 };
 
 export const viewport: Viewport = {

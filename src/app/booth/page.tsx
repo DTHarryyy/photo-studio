@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BoothLayoutSelect } from "@/components/booth/BoothLayoutSelect";
 
 export const metadata: Metadata = {
-  title: "Choose a Layout — Pitik Photo Booth",
+  title: "Choose a Layout — Chroniva Photo Booth",
   description: "Pick your photo layout before choosing a template.",
 };
 

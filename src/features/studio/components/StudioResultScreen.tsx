@@ -167,7 +167,7 @@ async function downloadComposite(
   );
 
   const link = document.createElement("a");
-  link.download = "pitik-booth.png";
+  link.download = "chroniva-booth.png";
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
@@ -190,7 +190,7 @@ export function StudioResultScreen({
 
   async function handleShare() {
     if (navigator.share) {
-      try { await navigator.share({ title: "My Pitik Photo Booth", text: "Created with pitik.io" }); }
+      try { await navigator.share({ title: "My Chroniva Photo Booth", text: "Created with chroniva.io" }); }
       catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(window.location.origin);
@@ -221,7 +221,7 @@ export function StudioResultScreen({
 
         <div className="flex items-center gap-1.5">
           <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 text-[9px] font-bold text-white">
-            P
+            C
           </div>
           <span className="text-sm font-semibold text-white">Your Shot</span>
         </div>
