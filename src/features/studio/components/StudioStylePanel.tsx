@@ -272,9 +272,13 @@ function StyleTab({
 // ─── Template tab ─────────────────────────────────────────────────────────────
 
 const TEMPLATE_VISUALS: Record<TemplateId, { bg: string; border: string; extra?: string }> = {
-  none:     { bg: "bg-zinc-800", border: "border-white/10" },
-  polaroid: { bg: "bg-white",    border: "border-white/20", extra: "pb-5" },
-  film:     { bg: "bg-black",    border: "border-zinc-800" },
+  none:     { bg: "bg-zinc-800",      border: "border-white/10" },
+  polaroid: { bg: "bg-white",         border: "border-white/20",        extra: "pb-5" },
+  film:     { bg: "bg-black",         border: "border-zinc-800" },
+  instax:   { bg: "bg-[#FAFAF8]",     border: "border-white/30",        extra: "pb-8" },
+  vintage:  { bg: "bg-[#F5EDD6]",     border: "border-[#B48C50]/50" },
+  minimal:  { bg: "bg-white",         border: "border-gray-300/60" },
+  dark:     { bg: "bg-[#111]",        border: "border-zinc-700/60" },
 };
 
 function TemplateTab({
@@ -345,7 +349,11 @@ function TemplateTab({
                               key={i}
                               className={cn(
                                 "rounded-[1px]",
-                                tpl.id === "polaroid" ? "bg-zinc-200" : "bg-white/15"
+                                tpl.id === "polaroid" || tpl.id === "instax" || tpl.id === "minimal"
+                                  ? "bg-zinc-200"
+                                  : tpl.id === "vintage"
+                                  ? "bg-[#C8A86B]/40"
+                                  : "bg-white/15"
                               )}
                             />
                           ))}

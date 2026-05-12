@@ -55,21 +55,27 @@ async function downloadComposite(
   layers: UserLayer[] = [],
   photoFilter: PhotoFilter | null = null
 ) {
-  const isFilm = templateId === "film";
-  const isPolaroid = templateId === "polaroid";
-
   const SLOT_W = 400;
   const SLOT_H = 400;
-  const GAP = 4;
-  const RAIL = isFilm ? 56 : 0;
-  const padX = isPolaroid ? 24 : isFilm ? 52 : 0;
-  const padY = isPolaroid ? 24 : isFilm ? 52 : 0;
-  const bottomPad = isPolaroid ? 100 : isFilm ? 240 : 0;
-  const photoGap = isFilm ? 52 : GAP;
+  const GAP    = 4;
+
+  type CanvasParams = { bg: string; padX: number; padY: number; bottomPad: number; photoGap: number; rail: number };
+  const PARAMS: Record<TemplateId, CanvasParams> = {
+    none:     { bg: "#000",     padX: 0,   padY: 0,   bottomPad: 0,   photoGap: GAP, rail: 0  },
+    polaroid: { bg: "#fff",     padX: 24,  padY: 24,  bottomPad: 100, photoGap: GAP, rail: 0  },
+    film:     { bg: "#000",     padX: 52,  padY: 52,  bottomPad: 240, photoGap: 52,  rail: 56 },
+    instax:   { bg: "#FAFAF8",  padX: 40,  padY: 40,  bottomPad: 180, photoGap: GAP, rail: 0  },
+    vintage:  { bg: "#F5EDD6",  padX: 56,  padY: 56,  bottomPad: 56,  photoGap: GAP, rail: 0  },
+    minimal:  { bg: "#fff",     padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
+    dark:     { bg: "#111111",  padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
+  };
+
+  const { bg, padX, padY, bottomPad, photoGap, rail } = PARAMS[templateId] ?? PARAMS.none;
+  const isFilm = templateId === "film";
 
   const photoW = cols * SLOT_W + (cols - 1) * photoGap;
   const photoH = rows * SLOT_H + (rows - 1) * photoGap;
-  const w = photoW + padX * 2 + RAIL * 2;
+  const w = photoW + padX * 2 + rail * 2;
   const h = photoH + padY + bottomPad;
 
   const canvas = document.createElement("canvas");
@@ -77,8 +83,15 @@ async function downloadComposite(
   canvas.height = h;
   const ctx = canvas.getContext("2d")!;
 
-  ctx.fillStyle = isPolaroid ? "#fff" : "#000";
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
+
+  // Vintage inner border
+  if (templateId === "vintage") {
+    ctx.strokeStyle = "rgba(180,140,80,0.4)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(padX - 12, padY - 12, photoW + 24, photoH + 24);
+  }
 
   if (isFilm) {
     const HOLE_W = 36;
@@ -87,7 +100,7 @@ async function downloadComposite(
     const spacing = h / (holeCount + 1);
     const drawRail = (railX: number) => {
       for (let i = 1; i <= holeCount; i++) {
-        const hx = railX + (RAIL - HOLE_W) / 2;
+        const hx = railX + (rail - HOLE_W) / 2;
         const hy = i * spacing - HOLE_H / 2;
         ctx.beginPath();
         ctx.roundRect(hx, hy, HOLE_W, HOLE_H, 4);
@@ -96,7 +109,7 @@ async function downloadComposite(
       }
     };
     drawRail(0);
-    drawRail(w - RAIL);
+    drawRail(w - rail);
   }
 
   await Promise.all(
@@ -107,7 +120,7 @@ async function downloadComposite(
         img.onload = () => {
           const col = i % cols;
           const row = Math.floor(i / cols);
-          const x = RAIL + padX + col * (SLOT_W + photoGap);
+          const x = rail + padX + col * (SLOT_W + photoGap);
           const y = padY + row * (SLOT_H + photoGap);
           const cssFilter = photoFilter?.css || (isFilm ? "grayscale(1)" : "");
           ctx.save();

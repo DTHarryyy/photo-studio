@@ -154,6 +154,55 @@ export function CompositeOutput({
     );
   }
 
+  if (templateId === "instax") {
+    const pad = Math.round(10 * S);
+    const pb  = Math.round(52 * S);
+    return (
+      <div
+        style={{ background: "#FAFAF8", padding: pad, paddingBottom: pb, borderRadius: Math.round(6 * S) }}
+        className="shadow-2xl"
+      >
+        <div style={{ overflow: "hidden", borderRadius: Math.round(2 * S) }}>{grid}</div>
+      </div>
+    );
+  }
+
+  if (templateId === "vintage") {
+    const pad   = Math.round(14 * S);
+    const inner = Math.round(4 * S);
+    return (
+      <div
+        style={{ background: "#F5EDD6", padding: pad, borderRadius: Math.round(2 * S) }}
+        className="shadow-2xl"
+      >
+        <div style={{ border: "1px solid rgba(180,140,80,0.4)", padding: inner, overflow: "hidden" }}>
+          {grid}
+        </div>
+      </div>
+    );
+  }
+
+  if (templateId === "minimal") {
+    const pad = Math.round(12 * S);
+    return (
+      <div style={{ background: "#fff", padding: pad }} className="shadow-2xl">
+        <div style={{ overflow: "hidden" }}>{grid}</div>
+      </div>
+    );
+  }
+
+  if (templateId === "dark") {
+    const pad = Math.round(12 * S);
+    return (
+      <div
+        style={{ background: "#111", padding: pad, borderRadius: Math.round(6 * S) }}
+        className="shadow-2xl ring-1 ring-white/5"
+      >
+        <div style={{ overflow: "hidden", borderRadius: Math.round(3 * S) }}>{grid}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10">
       {grid}

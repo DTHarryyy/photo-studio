@@ -30,8 +30,20 @@ function computeSlotSize(cols: number, rows: number, templateId: TemplateId): nu
   }
 
   if (templateId === "polaroid") {
-    const byW = Math.floor((availW - 32) / cols); // 16px side padding each side
-    const byH = Math.floor((availH - 64) / rows); // 40px bottom label + 24px top pad
+    const byW = Math.floor((availW - 32) / cols);
+    const byH = Math.floor((availH - 64) / rows);
+    return Math.max(80, Math.min(byW, byH, 340));
+  }
+
+  if (templateId === "instax") {
+    const byW = Math.floor((availW - 24) / cols);
+    const byH = Math.floor((availH - 100) / rows); // extra-wide bottom label
+    return Math.max(80, Math.min(byW, byH, 340));
+  }
+
+  if (templateId === "vintage" || templateId === "minimal" || templateId === "dark") {
+    const byW = Math.floor((availW - 32) / cols);
+    const byH = Math.floor((availH - 32) / rows);
     return Math.max(80, Math.min(byW, byH, 340));
   }
 
@@ -81,8 +93,12 @@ export function StudioLiveGrid({
   }, [cols, rows, templateId]);
 
   const S = slotSize / 120;
-  const isFilm = templateId === "film";
+  const isFilm     = templateId === "film";
   const isPolaroid = templateId === "polaroid";
+  const isInstax   = templateId === "instax";
+  const isVintage  = templateId === "vintage";
+  const isMinimal  = templateId === "minimal";
+  const isDark     = templateId === "dark";
 
   // ── Camera not yet active ─────────────────────────────────────────────────
   if (cameraStatus !== "active") {
@@ -171,7 +187,7 @@ export function StudioLiveGrid({
 
   if (isPolaroid) {
     const pad = Math.round(12 * S);
-    const pb = Math.round(40 * S);
+    const pb  = Math.round(40 * S);
     content = (
       <div
         style={{ background: "#fff", padding: pad, paddingBottom: pb, borderRadius: Math.round(2 * S) }}
@@ -181,8 +197,8 @@ export function StudioLiveGrid({
       </div>
     );
   } else if (isFilm) {
-    const RAIL_W = Math.round(slotSize * 0.14);
-    const PAD_X = Math.round(6 * S);
+    const RAIL_W   = Math.round(slotSize * 0.14);
+    const PAD_X    = Math.round(6 * S);
     const FOOTER_H = Math.round(28 * S);
     const holeCount = rows * 5 + 2;
     content = (
@@ -195,6 +211,56 @@ export function StudioLiveGrid({
           </div>
           <FilmRail railW={RAIL_W} holeCount={holeCount} />
         </div>
+      </div>
+    );
+  } else if (isInstax) {
+    const pad = Math.round(10 * S);
+    const pb  = Math.round(52 * S);
+    content = (
+      <div
+        style={{ background: "#FAFAF8", padding: pad, paddingBottom: pb, borderRadius: Math.round(6 * S) }}
+        className="shadow-2xl"
+      >
+        <div style={{ overflow: "hidden", borderRadius: Math.round(2 * S) }}>{grid}</div>
+      </div>
+    );
+  } else if (isVintage) {
+    const pad = Math.round(14 * S);
+    const inner = Math.round(4 * S);
+    content = (
+      <div
+        style={{ background: "#F5EDD6", padding: pad, borderRadius: Math.round(2 * S) }}
+        className="shadow-2xl"
+      >
+        <div
+          style={{
+            border: `1px solid rgba(180,140,80,0.4)`,
+            padding: inner,
+            overflow: "hidden",
+          }}
+        >
+          {grid}
+        </div>
+      </div>
+    );
+  } else if (isMinimal) {
+    const pad = Math.round(12 * S);
+    content = (
+      <div
+        style={{ background: "#fff", padding: pad }}
+        className="shadow-2xl"
+      >
+        <div style={{ overflow: "hidden" }}>{grid}</div>
+      </div>
+    );
+  } else if (isDark) {
+    const pad = Math.round(12 * S);
+    content = (
+      <div
+        style={{ background: "#111", padding: pad, borderRadius: Math.round(6 * S) }}
+        className="shadow-2xl ring-1 ring-white/5"
+      >
+        <div style={{ overflow: "hidden", borderRadius: Math.round(3 * S) }}>{grid}</div>
       </div>
     );
   } else {
