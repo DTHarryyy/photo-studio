@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,15 @@ export const metadata: Metadata = {
   description: "Creative AI Photo Studio",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#000000",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,9 +34,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      style={{ height: "100dvh", overscrollBehavior: "none" }}
     >
-      <body className="min-h-full flex flex-col bg-[#06061a]" suppressHydrationWarning>{children}</body>
+      <body className="flex flex-col bg-[#06061a]" style={{ height: "100dvh", overscrollBehavior: "none" }} suppressHydrationWarning>{children}</body>
     </html>
   );
 }

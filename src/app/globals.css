@@ -122,3 +122,12 @@ body {
 .animate-fade-in-up {
   animation: fade-in-up 0.25s ease-out forwards;
 }
+
+/* ─── Safe-area inset utilities ─────────────────────────────────────────────
+   Used in studio screens to avoid the notch and home indicator on iOS/Android.
+   viewport-fit=cover must be set (see root layout) for env() to have effect.
+   ─────────────────────────────────────────────────────────────────────────── */
+.pt-safe-top  { padding-top:    max(env(safe-area-inset-top),    16px); }
+.pb-safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+.pl-safe-left { padding-left:   max(env(safe-area-inset-left),   0px); }
+.pr-safe-right { padding-right:  max(env(safe-area-inset-right),  0px); }
