@@ -22,6 +22,18 @@ interface Props {
   onBack: () => void;
 }
 
+// ─── Preview slot size ────────────────────────────────────────────────────────
+
+function computePreviewSlotSize(cols: number, rows: number): number {
+  if (typeof window === "undefined") return 160;
+  const TOP_BAR = 56;
+  const ACTIONS = 208;
+  const PADDING = 48;
+  const availW = window.innerWidth  - 48;
+  const availH = window.innerHeight - TOP_BAR - ACTIONS - PADDING;
+  return Math.max(80, Math.min(Math.floor(availW / cols), Math.floor(availH / rows), 280));
+}
+
 // ─── Canvas object-cover helper ───────────────────────────────────────────────
 
 function drawImageCover(
@@ -55,23 +67,24 @@ async function downloadComposite(
   layers: UserLayer[] = [],
   photoFilter: PhotoFilter | null = null
 ) {
-  const SLOT_W = 400;
-  const SLOT_H = 400;
-  const GAP    = 4;
+  // 2× resolution for crisp retina output
+  const SLOT_W = 800;
+  const SLOT_H = 800;
+  const GAP    = 8;
 
   type CanvasParams = { bg: string; padX: number; padY: number; bottomPad: number; photoGap: number; rail: number };
   const PARAMS: Record<TemplateId, CanvasParams> = {
-    none:      { bg: "#000000", padX: 0,   padY: 0,   bottomPad: 0,   photoGap: GAP, rail: 0  },
-    polaroid:  { bg: "#FFFDF5", padX: 28,  padY: 28,  bottomPad: 120, photoGap: GAP, rail: 0  },
-    film:      { bg: "#000000", padX: 52,  padY: 52,  bottomPad: 240, photoGap: 52,  rail: 56 },
-    instax:    { bg: "#FAFAF8", padX: 40,  padY: 40,  bottomPad: 180, photoGap: GAP, rail: 0  },
-    vintage:   { bg: "#F5EDD6", padX: 56,  padY: 56,  bottomPad: 56,  photoGap: GAP, rail: 0  },
-    minimal:   { bg: "#ffffff", padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
-    dark:      { bg: "#111111", padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
-    scrapbook: { bg: "#C8956C", padX: 60,  padY: 60,  bottomPad: 60,  photoGap: GAP, rail: 0  },
-    neon:      { bg: "#050508", padX: 40,  padY: 40,  bottomPad: 40,  photoGap: GAP, rail: 0  },
-    pastel:    { bg: "#F0EBFF", padX: 44,  padY: 44,  bottomPad: 44,  photoGap: GAP, rail: 0  },
-    strip:     { bg: "#ffffff", padX: 40,  padY: 88,  bottomPad: 72,  photoGap: GAP, rail: 0  },
+    none:      { bg: "#000000", padX: 0,   padY: 0,   bottomPad: 0,   photoGap: GAP, rail: 0   },
+    polaroid:  { bg: "#FFFDF5", padX: 56,  padY: 56,  bottomPad: 240, photoGap: GAP, rail: 0   },
+    film:      { bg: "#000000", padX: 104, padY: 104, bottomPad: 480, photoGap: 104, rail: 112  },
+    instax:    { bg: "#FAFAF8", padX: 80,  padY: 80,  bottomPad: 360, photoGap: GAP, rail: 0   },
+    vintage:   { bg: "#F5EDD6", padX: 112, padY: 112, bottomPad: 112, photoGap: GAP, rail: 0   },
+    minimal:   { bg: "#ffffff", padX: 80,  padY: 80,  bottomPad: 80,  photoGap: GAP, rail: 0   },
+    dark:      { bg: "#111111", padX: 80,  padY: 80,  bottomPad: 80,  photoGap: GAP, rail: 0   },
+    scrapbook: { bg: "#C8956C", padX: 120, padY: 120, bottomPad: 120, photoGap: GAP, rail: 0   },
+    neon:      { bg: "#050508", padX: 80,  padY: 80,  bottomPad: 80,  photoGap: GAP, rail: 0   },
+    pastel:    { bg: "#F0EBFF", padX: 88,  padY: 88,  bottomPad: 88,  photoGap: GAP, rail: 0   },
+    strip:     { bg: "#ffffff", padX: 80,  padY: 176, bottomPad: 144, photoGap: GAP, rail: 0   },
   };
 
   const { bg, padX, padY, bottomPad, photoGap, rail } = PARAMS[templateId] ?? PARAMS.none;
@@ -83,9 +96,10 @@ async function downloadComposite(
   const h = photoH + padY + bottomPad;
 
   const canvas = document.createElement("canvas");
-  canvas.width = w;
+  canvas.width  = w;
   canvas.height = h;
-  const ctx = canvas.getContext("2d")!;
+  // Explicit sRGB so saved PNG colour matches the on-screen preview
+  const ctx = canvas.getContext("2d", { colorSpace: "srgb" })!;
 
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
@@ -93,56 +107,51 @@ async function downloadComposite(
   // ── Template-specific chrome drawn on canvas ──────────────────────────────
 
   if (templateId === "polaroid") {
-    // Warm divider line between photo and label area
     ctx.strokeStyle = "rgba(0,0,0,0.07)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(padX, padY + photoH + 16);
-    ctx.lineTo(w - padX, padY + photoH + 16);
+    ctx.moveTo(padX, padY + photoH + 32);
+    ctx.lineTo(w - padX, padY + photoH + 32);
     ctx.stroke();
   }
 
   if (templateId === "vintage") {
     ctx.strokeStyle = "rgba(180,140,80,0.4)";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(padX - 12, padY - 12, photoW + 24, photoH + 24);
+    ctx.lineWidth = 6;
+    ctx.strokeRect(padX - 24, padY - 24, photoW + 48, photoH + 48);
   }
 
   if (templateId === "film") {
-    // Orange accent strips at very top and bottom edges
     ctx.fillStyle = "rgba(210,100,0,0.55)";
-    ctx.fillRect(rail, 0, photoW + padX * 2, 6);
-    ctx.fillRect(rail, h - 6, photoW + padX * 2, 6);
+    ctx.fillRect(rail, 0, photoW + padX * 2, 12);
+    ctx.fillRect(rail, h - 12, photoW + padX * 2, 12);
   }
 
   if (templateId === "scrapbook") {
-    // Cream inner area
-    const innerPad = 20;
+    const innerPad = 40;
     ctx.fillStyle = "#EED9B8";
     ctx.fillRect(padX - innerPad, padY - innerPad, photoW + innerPad * 2, photoH + innerPad * 2);
   }
 
   if (templateId === "strip") {
-    // Header "PHOTO BOOTH" text
-    ctx.textAlign = "center";
+    ctx.textAlign    = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "#111111";
-    ctx.font = `bold ${Math.round(w * 0.022)}px Arial, sans-serif`;
+    ctx.fillStyle    = "#111111";
+    // Title — sized relative to slot, not canvas width, so it's consistent across layouts
+    ctx.font = `bold ${Math.round(SLOT_W * 0.05)}px Arial, sans-serif`;
     ctx.fillText("PHOTO BOOTH", w / 2, padY / 2);
-    // Divider lines
     ctx.strokeStyle = "#e5e5e5";
-    ctx.lineWidth = Math.max(2, Math.round(w * 0.002));
-    ctx.beginPath(); ctx.moveTo(padX, padY - 16); ctx.lineTo(w - padX, padY - 16); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(padX, h - bottomPad + 16); ctx.lineTo(w - padX, h - bottomPad + 16); ctx.stroke();
-    // Footer date
-    ctx.font = `${Math.round(w * 0.016)}px Arial, sans-serif`;
+    ctx.lineWidth   = 4;
+    ctx.beginPath(); ctx.moveTo(padX, padY - 32); ctx.lineTo(w - padX, padY - 32); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padX, h - bottomPad + 32); ctx.lineTo(w - padX, h - bottomPad + 32); ctx.stroke();
+    ctx.font      = `${Math.round(SLOT_W * 0.033)}px Arial, sans-serif`;
     ctx.fillStyle = "#aaaaaa";
     ctx.fillText(new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), w / 2, h - bottomPad / 2);
   }
 
   if (isFilm) {
-    const HOLE_W = 36;
-    const HOLE_H = 36;
+    const HOLE_W = 72;
+    const HOLE_H = 72;
     const holeCount = rows * 5 + 2;
     const spacing = h / (holeCount + 1);
     const drawRail = (railX: number) => {
@@ -150,7 +159,7 @@ async function downloadComposite(
         const hx = railX + (rail - HOLE_W) / 2;
         const hy = i * spacing - HOLE_H / 2;
         ctx.beginPath();
-        ctx.roundRect(hx, hy, HOLE_W, HOLE_H, 4);
+        ctx.roundRect(hx, hy, HOLE_W, HOLE_H, 8);
         ctx.fillStyle = "rgba(255,255,255,0.9)";
         ctx.fill();
       }
@@ -216,36 +225,33 @@ async function downloadComposite(
   // ── Post-photo template overlays ─────────────────────────────────────────────
 
   if (templateId === "film") {
-    // Frame numbers and KODAK text in footer
-    ctx.textAlign = "center";
+    ctx.textAlign    = "center";
     ctx.textBaseline = "middle";
-    const footerY = padY + photoH + (bottomPad * 0.45);
+    const footerY    = padY + photoH + bottomPad * 0.42;
+    ctx.font         = `bold ${Math.round(SLOT_W * 0.055)}px monospace`;
+    ctx.fillStyle    = "rgba(220,110,0,0.7)";
     for (let c = 0; c < cols; c++) {
       const fx = rail + padX + c * (SLOT_W + photoGap) + SLOT_W / 2;
-      ctx.font = `bold ${Math.round(SLOT_W * 0.055)}px monospace`;
-      ctx.fillStyle = "rgba(220,110,0,0.7)";
       ctx.fillText(`▪ ${c + 1}A ▪`, fx, footerY);
     }
-    ctx.font = `${Math.round(w * 0.012)}px monospace`;
+    ctx.font      = `${Math.round(SLOT_W * 0.025)}px monospace`;
     ctx.fillStyle = "rgba(200,100,0,0.45)";
-    ctx.fillText("KODAK 400 ■ ■ ■", w / 2, padY + photoH + bottomPad * 0.78);
+    ctx.fillText("KODAK 400 ■ ■ ■", w / 2, padY + photoH + bottomPad * 0.76);
   }
 
   if (templateId === "scrapbook") {
-    // Tape corners for each slot
-    const innerPad = 20;
     const tapeW = Math.round(SLOT_W * 0.15);
-    const tapeH = 18;
+    const tapeH = 36;
     for (let i = 0; i < cols * rows; i++) {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const sx = rail + padX + col * (SLOT_W + photoGap);
-      const sy = padY + row * (SLOT_H + photoGap);
+      const sx  = rail + padX + col * (SLOT_W + photoGap);
+      const sy  = padY + row  * (SLOT_H + photoGap);
       const corners = [
-        { cx: sx + SLOT_W * 0.1,  cy: sy,           angle: -7 },
-        { cx: sx + SLOT_W * 0.75, cy: sy,           angle:  7 },
-        { cx: sx + SLOT_W * 0.1,  cy: sy + SLOT_H,  angle:  7 },
-        { cx: sx + SLOT_W * 0.75, cy: sy + SLOT_H,  angle: -7 },
+        { cx: sx + SLOT_W * 0.1,  cy: sy,          angle: -7 },
+        { cx: sx + SLOT_W * 0.75, cy: sy,          angle:  7 },
+        { cx: sx + SLOT_W * 0.1,  cy: sy + SLOT_H, angle:  7 },
+        { cx: sx + SLOT_W * 0.75, cy: sy + SLOT_H, angle: -7 },
       ];
       corners.forEach(({ cx, cy, angle }) => {
         ctx.save();
@@ -256,7 +262,6 @@ async function downloadComposite(
         ctx.restore();
       });
     }
-    void innerPad;
   }
 
   // Draw user layers (stickers + text) scaled by % coords
@@ -312,6 +317,7 @@ export function StudioResultScreen({
 }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [slotSize] = useState(() => computePreviewSlotSize(cols, rows));
   const layers = useLayerStore((s) => s.layers);
   const photoFilter = useLayerStore((s) => s.photoFilter);
 
@@ -387,6 +393,7 @@ export function StudioResultScreen({
             count={count}
             capturedFrames={capturedFrames}
             templateId={templateId}
+            slotSize={slotSize}
             photoFilter={photoFilter}
           />
         </motion.div>
