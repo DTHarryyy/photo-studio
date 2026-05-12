@@ -47,29 +47,15 @@ const FONT_OPTIONS = [
   { label: "Mono",  value: "monospace"  },
 ];
 
-// ─── Filter definitions ──────────────────────────────────────────────────────
-
-const PHOTO_FILTERS: { id: string; name: string; css: string }[] = [
-  { id: "none",     name: "Original",  css: "" },
-  { id: "bw",       name: "B&W",       css: "grayscale(1)" },
-  { id: "sepia",    name: "Sepia",     css: "sepia(0.9)" },
-  { id: "vivid",    name: "Vivid",     css: "saturate(1.5) contrast(1.05)" },
-  { id: "warm",     name: "Warm",      css: "sepia(0.35) saturate(1.3) brightness(1.05)" },
-  { id: "cool",     name: "Cool",      css: "hue-rotate(190deg) saturate(0.85) brightness(1.05)" },
-  { id: "fade",     name: "Fade",      css: "brightness(1.15) contrast(0.8) saturate(0.75)" },
-  { id: "dramatic", name: "Dramatic",  css: "contrast(1.45) brightness(0.85) saturate(0.7)" },
-  { id: "film",     name: "Film",      css: "grayscale(1) contrast(1.15) brightness(0.9)" },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
-type PanelTab = "stickers" | "text" | "filters";
+type PanelTab = "stickers" | "text";
 
 export function EditToolPanel() {
   const [tab, setTab] = useState<PanelTab>("stickers");
   const [stickerCategory, setStickerCategory] = useState(CATEGORIES[0]);
 
-  const { layers, selectedId, addSticker, addText, updateLayer, photoFilter, setPhotoFilter } = useLayerStore();
+  const { layers, selectedId, addSticker, addText, updateLayer } = useLayerStore();
 
   const selectedLayer = layers.find((l) => l.id === selectedId);
   const selectedSticker =
@@ -86,14 +72,13 @@ export function EditToolPanel() {
   const TAB_LABELS: Record<PanelTab, string> = {
     stickers: "✦ Stickers",
     text: "T Text",
-    filters: "◐ Filters",
   };
 
   return (
     <div className="flex-shrink-0 border-t border-white/8 bg-black/80 backdrop-blur-xl">
       {/* ── Tab strip ──────────────────────────────────────────────────── */}
       <div className="flex border-b border-white/8">
-        {(["stickers", "text", "filters"] as PanelTab[]).map((t) => (
+        {(["stickers", "text"] as PanelTab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -126,9 +111,6 @@ export function EditToolPanel() {
             selectedText={selectedText}
             onUpdate={(patch) => selectedText && updateLayer(selectedText.id, patch)}
           />
-        )}
-        {tab === "filters" && (
-          <FiltersPanel activeFilter={photoFilter} onSelect={setPhotoFilter} />
         )}
       </div>
     </div>
@@ -293,54 +275,3 @@ function TextPanel({
   );
 }
 
-// ─── Filters panel ────────────────────────────────────────────────────────────
-
-function FiltersPanel({
-  activeFilter,
-  onSelect,
-}: {
-  activeFilter: string;
-  onSelect: (css: string) => void;
-}) {
-  return (
-    <div className="flex gap-3 overflow-x-auto px-3 pb-1 scrollbar-none">
-      {PHOTO_FILTERS.map((f) => {
-        const isActive = activeFilter === f.css;
-        return (
-          <button
-            key={f.id}
-            onClick={() => onSelect(f.css)}
-            className={cn(
-              "flex flex-shrink-0 flex-col items-center gap-1.5 transition-opacity",
-              isActive ? "opacity-100" : "opacity-60 hover:opacity-100"
-            )}
-          >
-            <div
-              className={cn(
-                "h-14 w-14 overflow-hidden rounded-xl ring-2 transition-all",
-                isActive ? "ring-violet-500" : "ring-transparent"
-              )}
-            >
-              <div
-                className="h-full w-full"
-                style={{
-                  filter: f.css || undefined,
-                  background:
-                    "linear-gradient(135deg, #f472b6 0%, #818cf8 50%, #34d399 100%)",
-                }}
-              />
-            </div>
-            <span
-              className={cn(
-                "text-[9px] font-semibold",
-                isActive ? "text-violet-400" : "text-zinc-500"
-              )}
-            >
-              {f.name}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}

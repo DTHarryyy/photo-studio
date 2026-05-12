@@ -15,6 +15,20 @@ const TABS: { id: Tab; label: string }[] = [
 
 const spring = { type: "spring" as const, damping: 28, stiffness: 320 };
 
+// ─── Filter definitions ───────────────────────────────────────────────────────
+
+const PHOTO_FILTERS: { id: string; name: string; css: string }[] = [
+  { id: "none",     name: "OG",      css: "" },
+  { id: "noir",     name: "Noir",    css: "grayscale(1)" },
+  { id: "amber",    name: "Amber",   css: "sepia(0.9)" },
+  { id: "pop",      name: "Pop",     css: "saturate(1.5) contrast(1.05)" },
+  { id: "golden",   name: "Golden",  css: "sepia(0.35) saturate(1.3) brightness(1.05)" },
+  { id: "frost",    name: "Frost",   css: "hue-rotate(190deg) saturate(0.85) brightness(1.05)" },
+  { id: "haze",     name: "Haze",    css: "brightness(1.15) contrast(0.8) saturate(0.75)" },
+  { id: "ink",      name: "Ink",     css: "contrast(1.45) brightness(0.85) saturate(0.7)" },
+  { id: "kodak",    name: "Kodak",   css: "grayscale(1) contrast(1.15) brightness(0.9)" },
+];
+
 interface LayoutOption {
   id: LayoutId;
   name: string;
@@ -39,6 +53,8 @@ interface Props {
   templates: TemplateOption[];
   activeTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
+  activeFilter: string;
+  onFilterChange: (css: string) => void;
   onClose: () => void;
 }
 
@@ -46,6 +62,7 @@ export function StudioStylePanel({
   packs, activePack, onSelect,
   layouts, activeLayout, onLayoutChange,
   templates, activeTemplate, onTemplateChange,
+  activeFilter, onFilterChange,
   onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>("style");
@@ -76,6 +93,7 @@ export function StudioStylePanel({
           packs={packs} activePack={activePack} onSelect={onSelect}
           layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
           templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange}
+          activeFilter={activeFilter} onFilterChange={onFilterChange}
           onClose={onClose}
         />
       </motion.div>
@@ -97,6 +115,7 @@ export function StudioStylePanel({
           packs={packs} activePack={activePack} onSelect={onSelect}
           layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange}
           templates={templates} activeTemplate={activeTemplate} onTemplateChange={onTemplateChange}
+          activeFilter={activeFilter} onFilterChange={onFilterChange}
           onClose={onClose}
         />
       </motion.div>
@@ -111,6 +130,7 @@ function PanelContent({
   packs, activePack, onSelect,
   layouts, activeLayout, onLayoutChange,
   templates, activeTemplate, onTemplateChange,
+  activeFilter, onFilterChange,
   onClose,
 }: {
   tab: Tab;
@@ -124,6 +144,8 @@ function PanelContent({
   templates: TemplateOption[];
   activeTemplate: TemplateId;
   onTemplateChange: (id: TemplateId) => void;
+  activeFilter: string;
+  onFilterChange: (css: string) => void;
   onClose: () => void;
 }) {
   return (
@@ -171,7 +193,7 @@ function PanelContent({
         {tab === "layout" && (
           <LayoutTab layouts={layouts} activeLayout={activeLayout} onLayoutChange={onLayoutChange} />
         )}
-        {tab === "filter" && <PlaceholderTab label="Photo filters coming soon" />}
+        {tab === "filter" && <FilterTab activeFilter={activeFilter} onFilterChange={onFilterChange} />}
       </div>
     </div>
   );
@@ -413,12 +435,54 @@ function LayoutTab({
   );
 }
 
-// ─── Placeholder tab ──────────────────────────────────────────────────────────
+// ─── Filter tab ───────────────────────────────────────────────────────────────
 
-function PlaceholderTab({ label }: { label: string }) {
+function FilterTab({
+  activeFilter,
+  onFilterChange,
+}: {
+  activeFilter: string;
+  onFilterChange: (css: string) => void;
+}) {
   return (
-    <div className="flex h-28 items-center justify-center">
-      <p className="text-xs text-zinc-700">{label}</p>
+    <div>
+      <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+        Filters
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {PHOTO_FILTERS.map((f) => {
+          const isActive = activeFilter === f.css;
+          return (
+            <button
+              key={f.id}
+              onClick={() => onFilterChange(f.css)}
+              className={cn(
+                "flex flex-col items-center gap-1.5 rounded-xl border p-2 transition-all",
+                isActive
+                  ? "border-violet-500/60 bg-violet-600/15 shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+                  : "border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
+              )}
+            >
+              <div
+                className="h-12 w-full overflow-hidden rounded-lg"
+                style={{
+                  filter: f.css || undefined,
+                  background:
+                    "linear-gradient(135deg, #f472b6 0%, #818cf8 50%, #34d399 100%)",
+                }}
+              />
+              <span
+                className={cn(
+                  "text-[10px] font-semibold",
+                  isActive ? "text-violet-300" : "text-zinc-500"
+                )}
+              >
+                {f.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

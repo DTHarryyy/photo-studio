@@ -80,6 +80,8 @@ export function StudioOrchestrator({ layout }: Props) {
   const { videoRef, capture } = useCamera();
   const { capturedFrames, clearFrames, removeFrame, cameraStatus, stream } = useCameraStore();
   const clearLayers = useLayerStore((s) => s.clearLayers);
+  const photoFilter = useLayerStore((s) => s.photoFilter);
+  const setPhotoFilter = useLayerStore((s) => s.setPhotoFilter);
 
   useEffect(() => {
     clearFrames();
@@ -194,6 +196,8 @@ export function StudioOrchestrator({ layout }: Props) {
             templates={STUDIO_TEMPLATES}
             activeTemplate={activeTemplate}
             onTemplateChange={setActiveTemplate}
+            activeFilter={photoFilter}
+            onFilterChange={setPhotoFilter}
             onClose={() => setStyleOpen(false)}
           />
         )}
