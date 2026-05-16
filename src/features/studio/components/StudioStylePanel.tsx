@@ -483,6 +483,42 @@ function TemplateTab({
 
 // ─── Layout tab ───────────────────────────────────────────────────────────────
 
+function LayoutPreviewCell({ isActive }: { isActive: boolean }) {
+  return (
+    <div
+      className="relative overflow-hidden"
+      style={{
+        borderRadius: 3,
+        background: isActive
+          ? "linear-gradient(160deg, rgba(167,139,250,0.55) 0%, rgba(109,40,217,0.35) 100%)"
+          : "linear-gradient(160deg, rgba(148,163,184,0.22) 0%, rgba(71,85,105,0.14) 100%)",
+        border: isActive
+          ? "0.5px solid rgba(167,139,250,0.4)"
+          : "0.5px solid rgba(148,163,184,0.12)",
+      }}
+    >
+      {/* Simulated photo content: a horizon line + sky glint */}
+      <div className="absolute inset-0">
+        <div className="absolute left-0 right-0 top-[28%] h-[40%]"
+          style={{
+            background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.06) 0%, transparent 70%)",
+          }}
+        />
+        <div
+          className="absolute left-[15%] right-[15%]"
+          style={{
+            bottom: "28%",
+            height: "0.5px",
+            background: isActive
+              ? "rgba(196,181,253,0.25)"
+              : "rgba(148,163,184,0.18)",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function LayoutTab({
   layouts,
   activeLayout,
@@ -500,7 +536,7 @@ function LayoutTab({
       <p className="mb-3 text-[11px] leading-relaxed text-zinc-600">
         Switching layout resets your current captures.
       </p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
         {layouts.map((layout) => {
           const isActive = layout.id === activeLayout;
           return (
@@ -508,50 +544,63 @@ function LayoutTab({
               key={layout.id}
               onClick={() => onLayoutChange(layout.id)}
               className={cn(
-                "flex flex-col overflow-hidden rounded-xl border transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
+                "group relative flex flex-col overflow-hidden rounded-2xl border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
                 isActive
-                  ? "border-violet-500/60 bg-violet-600/15 shadow-[0_0_12px_rgba(139,92,246,0.2)]"
-                  : "border-white/8 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.06]"
+                  ? "border-violet-500/50 bg-violet-950/50 shadow-[0_0_18px_rgba(139,92,246,0.22)]"
+                  : "border-white/[0.08] bg-white/[0.03] hover:border-white/[0.16] hover:bg-white/[0.06]"
               )}
             >
-              {/* Mini grid preview — fixed square so all cards are the same height */}
+              {/* Preview — fixed square aspect, cells show the actual layout structure */}
               <div className="p-2.5">
-                <div className="aspect-square w-full overflow-hidden rounded-lg bg-black/40">
+                <div
+                  className="aspect-square w-full overflow-hidden rounded-xl"
+                  style={{
+                    background: isActive
+                      ? "rgba(46,16,101,0.6)"
+                      : "rgba(9,9,11,0.7)",
+                    border: isActive
+                      ? "1px solid rgba(139,92,246,0.2)"
+                      : "1px solid rgba(255,255,255,0.05)",
+                  }}
+                >
                   <div
                     className="h-full w-full"
                     style={{
                       display: "grid",
                       gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
                       gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
-                      gap: "3px",
-                      padding: "4px",
+                      gap: 3,
+                      padding: 5,
                     }}
                   >
                     {Array.from({ length: layout.cols * layout.rows }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "rounded-md transition-colors",
-                          isActive ? "bg-violet-400/50" : "bg-white/20"
-                        )}
-                      />
+                      <LayoutPreviewCell key={i} isActive={isActive} />
                     ))}
                   </div>
                 </div>
               </div>
 
               {/* Label */}
-              <div className="px-2 pb-2.5 text-center">
+              <div className="px-2 pb-3 text-center">
                 <p className={cn(
                   "text-[11px] font-semibold leading-tight",
-                  isActive ? "text-violet-300" : "text-zinc-400"
+                  isActive ? "text-violet-300" : "text-zinc-300"
                 )}>
                   {layout.name}
                 </p>
-                <p className="mt-0.5 text-[10px] text-zinc-600">
+                <p className="mt-0.5 text-[10px] text-zinc-500">
                   {layout.count} photo{layout.count !== 1 ? "s" : ""}
                 </p>
               </div>
+
+              {/* Active check badge */}
+              {isActive && (
+                <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-violet-500">
+                  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                    <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
             </button>
           );
         })}

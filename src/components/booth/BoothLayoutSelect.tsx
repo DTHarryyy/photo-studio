@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { HeroBackground } from "@/components/hero/HeroBackground";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,18 @@ const LAYOUTS = [
 ] as const;
 
 export function BoothLayoutSelect() {
+  const router = useRouter();
+
+  async function handleLayoutPick(id: string) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      stream.getTracks().forEach((t) => t.stop());
+    } catch {
+      // denied or unavailable — let the studio page handle it
+    }
+    router.push(`/studio?layout=${id}`);
+  }
+
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-[#07001a]">
       <HeroBackground />
@@ -53,7 +66,7 @@ export function BoothLayoutSelect() {
           {/* Layout grid */}
           <div className="grid grid-cols-3 gap-3 sm:gap-4">
             {LAYOUTS.map((layout) => (
-              <LayoutCard key={layout.id} layout={layout} />
+              <LayoutCard key={layout.id} layout={layout} onPick={handleLayoutPick} />
             ))}
           </div>
 
@@ -67,10 +80,10 @@ export function BoothLayoutSelect() {
 
 type Layout = (typeof LAYOUTS)[number];
 
-function LayoutCard({ layout }: { layout: Layout }) {
+function LayoutCard({ layout, onPick }: { layout: Layout; onPick: (id: string) => void }) {
   return (
-    <Link
-      href={`/studio?layout=${layout.id}`}
+    <button
+      onClick={() => onPick(layout.id)}
       className={cn(
         "group flex h-44 flex-col overflow-hidden rounded-2xl",
         "border border-white/10 bg-white/[0.04]",
@@ -110,6 +123,6 @@ function LayoutCard({ layout }: { layout: Layout }) {
           {layout.count} photo{layout.count !== 1 ? "s" : ""}
         </p>
       </div>
-    </Link>
+    </button>
   );
 }

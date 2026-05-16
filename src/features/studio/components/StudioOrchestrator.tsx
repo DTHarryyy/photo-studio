@@ -22,17 +22,21 @@ const LAYOUT_MAP = {
   "3stacked": { cols: 1, rows: 3, count: 3 },
   "4grid":    { cols: 2, rows: 2, count: 4 },
   "3strip":   { cols: 3, rows: 1, count: 3 },
+  "4strip":   { cols: 4, rows: 1, count: 4 },
+  "6grid":    { cols: 2, rows: 3, count: 6 },
 } as const;
 
 export type LayoutId = keyof typeof LAYOUT_MAP;
 
 export const LAYOUT_LIST: { id: LayoutId; name: string; cols: number; rows: number; count: number }[] = [
-  { id: "1photo",   name: "1 Photo",        cols: 1, rows: 1, count: 1 },
-  { id: "2side",    name: "2 Side by Side",  cols: 2, rows: 1, count: 2 },
-  { id: "2stacked", name: "2 Stacked",       cols: 1, rows: 2, count: 2 },
-  { id: "3stacked", name: "3 Stacked",       cols: 1, rows: 3, count: 3 },
-  { id: "4grid",    name: "4 Grid",          cols: 2, rows: 2, count: 4 },
-  { id: "3strip",   name: "3 Strip",         cols: 3, rows: 1, count: 3 },
+  { id: "1photo",   name: "Single",          cols: 1, rows: 1, count: 1 },
+  { id: "2side",    name: "Side by Side",    cols: 2, rows: 1, count: 2 },
+  { id: "2stacked", name: "Stacked Duo",     cols: 1, rows: 2, count: 2 },
+  { id: "3stacked", name: "Triple Stack",    cols: 1, rows: 3, count: 3 },
+  { id: "4grid",    name: "2×2 Grid",        cols: 2, rows: 2, count: 4 },
+  { id: "3strip",   name: "Triple Strip",    cols: 3, rows: 1, count: 3 },
+  { id: "4strip",   name: "Quad Strip",      cols: 4, rows: 1, count: 4 },
+  { id: "6grid",    name: "2×3 Grid",        cols: 2, rows: 3, count: 6 },
 ];
 
 // ─── Templates ────────────────────────────────────────────────────────────────
