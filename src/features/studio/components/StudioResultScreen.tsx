@@ -66,7 +66,9 @@ async function downloadComposite(
   templateId: TemplateId,
   layers: UserLayer[] = [],
   photoFilter: PhotoFilter | null = null,
-  photoBackground: string | null = null
+  photoBackground: string | null = null,
+  printTitle = "",
+  printDate = ""
 ) {
   // 2× resolution for crisp retina output
   const SLOT_W = 800;
@@ -161,16 +163,15 @@ async function downloadComposite(
     ctx.textAlign    = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle    = "#111111";
-    // Title — sized relative to slot, not canvas width, so it's consistent across layouts
     ctx.font = `bold ${Math.round(SLOT_W * 0.05)}px Arial, sans-serif`;
-    ctx.fillText("PHOTO BOOTH", w / 2, padY / 2);
+    ctx.fillText((printTitle || "PHOTO BOOTH").toUpperCase(), w / 2, padY / 2);
     ctx.strokeStyle = "#e5e5e5";
     ctx.lineWidth   = 4;
     ctx.beginPath(); ctx.moveTo(padX, padY - 32); ctx.lineTo(w - padX, padY - 32); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(padX, h - bottomPad + 32); ctx.lineTo(w - padX, h - bottomPad + 32); ctx.stroke();
     ctx.font      = `${Math.round(SLOT_W * 0.033)}px Arial, sans-serif`;
     ctx.fillStyle = "#aaaaaa";
-    ctx.fillText(new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), w / 2, h - bottomPad / 2);
+    ctx.fillText(printDate || new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), w / 2, h - bottomPad / 2);
   }
 
   if (isFilm) {
@@ -328,6 +329,38 @@ async function downloadComposite(
     )
   );
 
+  // Print text footer — rendered after photos/layers so it sits on top
+  if ((printTitle || printDate) && templateId !== "strip") {
+    const isDark = ["none", "film", "dark", "neon"].includes(templateId);
+    const TEXT_H = Math.round(SLOT_W * 0.11);
+    // Extend canvas height to fit the text block
+    const extended = document.createElement("canvas");
+    extended.width  = w;
+    extended.height = h + TEXT_H;
+    const ectx = extended.getContext("2d", { colorSpace: "srgb" })!;
+    ectx.drawImage(canvas, 0, 0);
+    // Fill text area with template bg color
+    ectx.fillStyle = bg;
+    ectx.fillRect(0, h, w, TEXT_H);
+    ectx.textAlign    = "center";
+    ectx.textBaseline = "middle";
+    if (printTitle) {
+      ectx.font      = `bold ${Math.round(SLOT_W * 0.042)}px Arial, sans-serif`;
+      ectx.fillStyle = isDark ? "rgba(255,255,255,0.72)" : "#555555";
+      ectx.fillText(printTitle.toUpperCase(), w / 2, h + (printDate ? TEXT_H * 0.36 : TEXT_H * 0.5));
+    }
+    if (printDate) {
+      ectx.font      = `${Math.round(SLOT_W * 0.028)}px Arial, sans-serif`;
+      ectx.fillStyle = isDark ? "rgba(255,255,255,0.38)" : "#999999";
+      ectx.fillText(printDate, w / 2, h + (printTitle ? TEXT_H * 0.72 : TEXT_H * 0.5));
+    }
+    const link2 = document.createElement("a");
+    link2.download = "chroniva-booth.png";
+    link2.href = extended.toDataURL("image/png");
+    link2.click();
+    return;
+  }
+
   const link = document.createElement("a");
   link.download = "chroniva-booth.png";
   link.href = canvas.toDataURL("image/png");
@@ -342,13 +375,17 @@ export function StudioResultScreen({
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [slotSize] = useState(() => computePreviewSlotSize(cols, rows));
+  const [printTitle, setPrintTitle] = useState("Photo Booth");
+  const [printDate, setPrintDate] = useState(
+    () => new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  );
   const layers = useLayerStore((s) => s.layers);
   const photoFilter = useLayerStore((s) => s.photoFilter);
   const photoBackground = useLayerStore((s) => s.photoBackground);
 
   async function handleDownload() {
     setDownloading(true);
-    await downloadComposite(capturedFrames, cols, rows, templateId, layers, photoFilter, photoBackground);
+    await downloadComposite(capturedFrames, cols, rows, templateId, layers, photoFilter, photoBackground, printTitle, printDate);
     setDownloading(false);
   }
 
@@ -421,8 +458,35 @@ export function StudioResultScreen({
             slotSize={slotSize}
             photoFilter={photoFilter}
             photoBackground={photoBackground}
+            printTitle={printTitle}
+            printDate={printDate}
           />
         </motion.div>
+      </div>
+
+      {/* Print text editor */}
+      <div className="flex flex-shrink-0 items-center justify-center gap-5 border-t border-white/8 px-5 py-3">
+        <div className="flex flex-col items-center gap-1">
+          <input
+            value={printTitle}
+            onChange={(e) => setPrintTitle(e.target.value)}
+            maxLength={32}
+            placeholder="Photo Booth"
+            className="w-36 border-b border-white/20 bg-transparent pb-0.5 text-center text-sm font-bold uppercase tracking-widest text-white outline-none placeholder:text-zinc-600 focus:border-violet-500 transition-colors"
+          />
+          <span className="text-[9px] uppercase tracking-wider text-zinc-600">Title</span>
+        </div>
+        <div className="h-7 w-px bg-white/10" />
+        <div className="flex flex-col items-center gap-1">
+          <input
+            value={printDate}
+            onChange={(e) => setPrintDate(e.target.value)}
+            maxLength={24}
+            placeholder="Date"
+            className="w-28 border-b border-white/20 bg-transparent pb-0.5 text-center text-xs tracking-wide text-zinc-400 outline-none placeholder:text-zinc-600 focus:border-violet-500 transition-colors"
+          />
+          <span className="text-[9px] uppercase tracking-wider text-zinc-600">Date</span>
+        </div>
       </div>
 
       {/* Actions */}
